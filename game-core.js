@@ -4,7 +4,7 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GeneralTermGameCore = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function createCore(FractionClass) {
-  const LEVEL_XP = Object.freeze({ 1:500, 2:500, 3:500, 4:500, 5:500 });
+  const LEVEL_XP = Object.freeze({ 1:150, 2:150, 3:150, 4:150, 5:150 });
   const getLevelXp = (level) => LEVEL_XP[Math.min(5, Math.max(1, Number(level) || 1))];
   const randomInt = (min, max, rng) => Math.floor(rng() * (max - min + 1)) + min;
 

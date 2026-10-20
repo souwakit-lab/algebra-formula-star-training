@@ -40,6 +40,18 @@ function defaultProgress() {
   return { level: 1, xp: 0, total: 0, correct: 0, streak: 0, mistakes: 0, mistakeHistory: [], levelStats: emptyLevelStats() };
 }
 
+function normalizeLevelProgress(raw) {
+  const next = { ...raw };
+  next.level = Math.min(5, Math.max(1, Number(next.level) || 1));
+  next.xp = Math.max(0, Number(next.xp) || 0);
+  while (next.level < 5 && next.xp >= core.getLevelXp(next.level)) {
+    next.xp -= core.getLevelXp(next.level);
+    next.level += 1;
+  }
+  if (next.level === 5) next.xp = Math.min(next.xp, core.getLevelXp(5));
+  return next;
+}
+
 function emptyLevelStats() {
   return Object.fromEntries([1,2,3,4,5].map((level) => [level, { total:0, correct:0, streak:0 }]));
 }
@@ -76,7 +88,7 @@ function loadProgress() {
   const fallback = defaultProgress();
   try {
     const saved = JSON.parse(localStorage.getItem(playerStorageKey()));
-    return { ...fallback, ...saved, level: Math.min(5, Math.max(1, Number(saved?.level) || 1)), levelStats: normalizeLevelStats(saved?.levelStats) };
+    return normalizeLevelProgress({ ...fallback, ...saved, levelStats: normalizeLevelStats(saved?.levelStats) });
   } catch {
     return fallback;
   }
@@ -176,7 +188,7 @@ async function loadRemoteProgress(localTotal) {
     }
     const previousLevel = progress.level;
     const localMistakeHistory = Array.isArray(progress.mistakeHistory) ? progress.mistakeHistory : [];
-    progress = { ...defaultProgress(), ...data.player, mistakeHistory:localMistakeHistory, levelStats: normalizeLevelStats(data.levelStats || data.player.levelStats) };
+    progress = normalizeLevelProgress({ ...defaultProgress(), ...data.player, mistakeHistory:localMistakeHistory, levelStats: normalizeLevelStats(data.levelStats || data.player.levelStats) });
     saveProgress();
     updateProgressUI();
     if (progress.level !== previousLevel) {
@@ -425,7 +437,7 @@ function showLevelDialog(completed) {
   $("dialog-avatar").src = info.avatar;
   $("dialog-kicker").textContent = completed ? "MASTERED" : "LEVEL UP";
   $("dialog-title").textContent = completed ? "完成全部關卡" : `進入程度${["一", "二", "三", "四", "五"][progress.level - 1]}`;
-  $("dialog-copy").textContent = completed ? "你已完成 2,500 XP 的通項公式星術訓練。" : `${info.title}已解鎖。`;
+  $("dialog-copy").textContent = completed ? "你已完成 750 XP 的通項公式星術訓練。" : `${info.title}已解鎖。`;
   $("continue-button").textContent = completed ? "繼續練習" : "開始下一關";
   $("level-dialog").showModal();
 }
@@ -498,6 +510,7 @@ async function getStudentExportData() {
   const remote = await response.json();
   const local = localStudentExportData();
   const data = Number(remote.player?.total || 0) >= Number(local.player.total || 0) ? { ...remote } : { ...local };
+  if (data.player) data.player = normalizeLevelProgress(data.player);
   const mistakes = [...(remote.wrongAnswers || []), ...(local.wrongAnswers || [])];
   data.wrongAnswers = [...new Map(mistakes.map((item) => [`${item.level}|${item.question}|${item.studentAnswer}|${item.correctAnswer}`, item])).values()];
   studentExportCache = { time:Date.now(), data };
@@ -505,7 +518,7 @@ async function getStudentExportData() {
 }
 
 function studentTotalXp(student) {
-  const completedLevelXp = [0, 0, 500, 1000, 1500, 2000];
+  const completedLevelXp = [0, 0, 150, 300, 450, 600];
   const level = Math.min(5, Math.max(1, Number(student.level) || 1));
   return completedLevelXp[level] + Number(student.xp || 0);
 }

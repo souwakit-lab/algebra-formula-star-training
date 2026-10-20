@@ -59,8 +59,8 @@ async function refreshData() {
 }
 
 function renderDashboard(data) {
-  latestData = data;
-  const players = data.players || [];
+  const players = (data.players || []).map(normalizePlayerLevel);
+  latestData = { ...data, players };
   const totalAnswers = players.reduce((sum, player) => sum + Number(player.total || 0), 0);
   const totalCorrect = players.reduce((sum, player) => sum + Number(player.correct || 0), 0);
   const bossMaxHp = Number(data.bossMaxHp) || 300000;
@@ -78,6 +78,18 @@ function renderDashboard(data) {
   renderWarnings(players);
 }
 
+function normalizePlayerLevel(raw) {
+  const player = { ...raw };
+  player.level = Math.min(5, Math.max(1, Number(player.level) || 1));
+  player.xp = Math.max(0, Number(player.xp) || 0);
+  while (player.level < 5 && player.xp >= 150) {
+    player.xp -= 150;
+    player.level += 1;
+  }
+  if (player.level === 5) player.xp = Math.min(player.xp, 150);
+  return player;
+}
+
 function renderTiers(players, levelStats) {
   const counts = [1,2,3,4,5].map((level) => players.filter((player) => Number(player.level) === level).length);
   const max = Math.max(1, ...counts);
@@ -92,7 +104,7 @@ function renderTiers(players, levelStats) {
 }
 
 function totalXp(player) {
-  const completedLevelXp = [0, 0, 500, 1000, 1500, 2000];
+  const completedLevelXp = [0, 0, 150, 300, 450, 600];
   const level = Math.min(5, Math.max(1, Number(player.level) || 1));
   return completedLevelXp[level] + Number(player.xp || 0);
 }

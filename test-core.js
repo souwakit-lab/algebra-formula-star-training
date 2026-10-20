@@ -10,7 +10,7 @@ function seeded(seed) {
   };
 }
 
-assert.deepEqual(core.LEVEL_XP, { 1:500, 2:500, 3:500, 4:500, 5:500 });
+assert.deepEqual(core.LEVEL_XP, { 1:150, 2:150, 3:150, 4:150, 5:150 });
 for (let level = 1; level <= 5; level += 1) {
   const rng = seeded(2030 + level);
   for (let index = 0; index < 1000; index += 1) {
@@ -40,12 +40,12 @@ assert.equal(mathRenderer.plainText("T_n=6n-2\\qquad 求\\ T_{11}"), "Tn=6n−2�
 assert.equal(mathRenderer.plainText("T_n=\\frac{2-n}{3n}"), "Tn=2−n/3n");
 assert.equal(mathRenderer.plainText("\\text{有，}n=8"), "有，n=8");
 
-let result = core.applyResult({ level:1, xp:485, total:0, correct:0, streak:0 }, true);
+let result = core.applyResult({ level:1, xp:135, total:0, correct:0, streak:0 }, true);
 assert.equal(result.leveledUp, true);
 assert.equal(result.progress.level, 2);
 assert.equal(result.progress.xp, 0);
-result = core.applyResult({ level:5, xp:495, total:0, correct:0, streak:0 }, true);
+result = core.applyResult({ level:5, xp:145, total:0, correct:0, streak:0 }, true);
 assert.equal(result.completed, true);
-assert.equal(result.progress.xp, 500);
+assert.equal(result.progress.xp, 150);
 
 console.log("All general-term formula core tests passed.");
