@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1524">
+  <title>化簡代數式星術戰情室</title>
+  <link rel="stylesheet" href="dashboard.css?v=20261020b">
+  <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="simplify-dashboard.js?v=20261021a"></script>
+</head>
+<body>
+  <main class="dashboard-shell">
+    <header class="dashboard-header">
+      <div class="dashboard-title">
+        <span class="title-mark"><i data-lucide="swords"></i></span>
+        <div><small>ALGEBRA SIMPLIFY</small><h1>化簡代數式星術戰情室</h1></div>
+      </div>
+      <div class="dashboard-actions">
+        <label>顯示班別
+          <select id="class-filter">
+            <option value="">全校總覽</option>
+            <option>SG1A</option><option>SG1B</option>
+          </select>
+        </label>
+        <button id="download-data-button" type="button" title="下載學生總體數據" aria-label="下載學生總體數據"><i data-lucide="download"></i></button>
+        <button id="download-report-button" type="button" title="下載統計報表" aria-label="下載統計報表"><i data-lucide="file-down"></i></button>
+        <button id="reset-data-button" class="danger-action" type="button" title="重置數據" aria-label="重置數據"><i data-lucide="rotate-ccw"></i></button>
+        <button id="fullscreen-button" type="button" title="全螢幕" aria-label="全螢幕"><i data-lucide="maximize"></i></button>
+      </div>
+    </header>
+
+    <section class="boss-status">
+      <div><span>終極魔王 HP</span><strong id="boss-copy">300,000 / 300,000</strong></div>
+      <div class="boss-track"><span id="boss-bar"></span></div>
+    </section>
+
+    <section class="battle-grid">
+      <div class="battle-stage">
+        <img class="boss-watermark" src="monster-lv7.webp" alt="">
+        <img class="boss-main" src="monster-lv7.webp" alt="混沌序列巨龍">
+        <div class="boss-name"><small>FINAL BOSS</small><strong>混沌序列巨龍</strong><span>全班答對即可共同削減能量</span></div>
+        <div class="live-stats">
+          <div><span>參與學生</span><strong id="stat-players">0</strong></div>
+          <div><span>已答題</span><strong id="stat-answers">0</strong></div>
+          <div><span>正確率</span><strong id="stat-accuracy">--</strong></div>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <section class="tier-panel dark-panel">
+          <div class="panel-heading"><strong>全班戰鬥等級</strong><span id="updated-at">等待數據</span></div>
+          <div class="tier-row"><span class="tier-dot level-one"></span><b>Level 1</b><div><i id="tier-1-bar"></i></div><strong id="tier-1-count">0</strong><small id="tier-1-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+          <div class="tier-row"><span class="tier-dot level-two"></span><b>Level 2</b><div><i id="tier-2-bar"></i></div><strong id="tier-2-count">0</strong><small id="tier-2-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+          <div class="tier-row"><span class="tier-dot level-three"></span><b>Level 3</b><div><i id="tier-3-bar"></i></div><strong id="tier-3-count">0</strong><small id="tier-3-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+          <div class="tier-row"><span class="tier-dot level-four"></span><b>Level 4</b><div><i id="tier-4-bar"></i></div><strong id="tier-4-count">0</strong><small id="tier-4-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+          <div class="tier-row"><span class="tier-dot level-five"></span><b>Level 5</b><div><i id="tier-5-bar"></i></div><strong id="tier-5-count">0</strong><small id="tier-5-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+          <div class="tier-row"><span class="tier-dot level-six"></span><b>Level 6</b><div><i id="tier-6-bar"></i></div><strong id="tier-6-count">0</strong><small id="tier-6-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+        </section>
+        <section class="join-panel dark-panel">
+          <div class="panel-heading"><strong>掃碼加入討伐</strong><i data-lucide="scan-line"></i></div>
+          <div class="qr-frame"><div id="join-qr" aria-label="學生練習頁 QR Code"></div></div>
+          <a id="student-link" href="simplify.html" target="_blank">開啟學生練習</a>
+        </section>
+      </aside>
+    </section>
+
+    <section class="leaderboard-grid">
+      <article class="leaderboard dark-panel accent-yellow">
+        <div class="leaderboard-title"><i data-lucide="trophy"></i><div><strong>經驗王</strong><span>累積 XP</span></div></div>
+        <ol id="xp-list"></ol>
+      </article>
+      <article class="leaderboard dark-panel accent-sky">
+        <div class="leaderboard-title"><i data-lucide="flame"></i><div><strong>連勝王</strong><span>目前連續答對</span></div></div>
+        <ol id="streak-list"></ol>
+      </article>
+      <article class="leaderboard dark-panel accent-mint">
+        <div class="leaderboard-title"><i data-lucide="graduation-cap"></i><div><strong>準確王</strong><span>最少作答 3 題</span></div></div>
+        <ol id="accuracy-list"></ol>
+      </article>
+      <article class="leaderboard warning-panel dark-panel">
+        <div class="leaderboard-title"><i data-lucide="triangle-alert"></i><div><strong>需要支援</strong><span>教師關注</span></div></div>
+        <div id="warning-list" class="warning-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="reset-dialog" class="confirm-dialog">
+    <form method="dialog">
+      <span class="dialog-icon"><i data-lucide="triangle-alert"></i></span>
+      <small>RESET DATA</small>
+      <h2>重置課堂數據？</h2>
+      <p id="reset-dialog-copy">這會清除學生進度、作答紀錄並回復首領能量。</p>
+      <div class="dialog-actions">
+        <button value="cancel" type="submit">取消</button>
+        <button id="confirm-reset-button" class="danger-confirm" value="default" type="button">確認重置</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="dashboard-toast" class="dashboard-toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+
