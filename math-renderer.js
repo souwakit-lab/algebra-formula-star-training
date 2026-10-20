@@ -101,7 +101,7 @@
       const power = source.slice(afterBase).match(/^\^(?:\{(\d+)\}|(\d+))/);
       const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
       const unicodePower = source.slice(afterBase).match(/^[⁰¹²³⁴⁵⁶⁷⁸⁹]+/);
-      if ((isLetter || isNumber) && (power || unicodePower)) {
+      if (isLetter && (power || unicodePower)) {
         const superscript = document.createElementNS("http://www.w3.org/1998/Math/MathML", "msup");
         const base = document.createElementNS("http://www.w3.org/1998/Math/MathML", isNumber ? "mn" : "mi");
         const exponent = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mn");
