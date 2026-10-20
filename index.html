@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>通項公式星術訓練</title>
+  <link rel="stylesheet" href="styles.css?v=20261020b">
+  <link rel="stylesheet" href="battle-ui.css?v=20261020b">
+  <script async id="lucide-script" src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script defer src="vendor/fraction.min.js"></script>
+  <script defer src="math-renderer.js?v=20261020b"></script>
+  <script defer src="game-core.js?v=20261020b"></script>
+  <script defer src="config.js"></script>
+  <script defer src="battle.js?v=20261020b"></script>
+  <script defer src="app.js?v=20261020b"></script>
+</head>
+<body>
+  <section id="login-screen" class="login-screen">
+    <div class="login-panel">
+      <div class="login-brand"><span>T</span><div><small>GENERAL TERM ACADEMY</small><h1>通項公式星術訓練</h1></div></div>
+      <div class="login-art"><img src="hero-lv1.webp" alt="星術學徒"></div>
+      <label>班別<select id="class-select"></select></label>
+      <label>學號<select id="id-select"></select></label>
+      <div class="student-preview"><span>學生</span><strong id="student-name-display">請選擇班別與學號</strong></div>
+      <button id="login-button" type="button">進入訓練</button>
+      <p id="login-status"></p>
+    </div>
+  </section>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <span class="brand-mark">T</span>
+        <div>
+          <p>GENERAL TERM ACADEMY</p>
+          <h1>通項公式星術訓練</h1>
+        </div>
+      </div>
+      <div class="header-stats" aria-label="練習統計">
+        <div class="identity-stat"><span id="player-class">尚未登入</span><strong id="player-name">學生</strong></div>
+        <button id="logout-button" class="icon-button" type="button" title="切換學生" aria-label="切換學生"><i data-lucide="log-out"></i></button>
+        <button id="reset-progress" class="icon-button" type="button" title="重設進度" aria-label="重設進度">
+          <i data-lucide="rotate-ccw"></i>
+        </button>
+      </div>
+    </header>
+
+    <section class="student-stats" aria-label="個人答題數據">
+      <div><span>已答題</span><strong id="total-count">0</strong></div>
+      <div><span>答對</span><strong id="correct-count">0</strong></div>
+      <div><span>答錯</span><strong id="wrong-count">0</strong></div>
+      <div><span>正確率</span><strong id="accuracy-count">--</strong></div>
+      <div><span>目前連勝</span><strong id="streak-count">0</strong></div>
+    </section>
+    <nav class="stats-level-filter" aria-label="答題統計範圍">
+      <span>統計範圍</span>
+      <div role="tablist" aria-label="按程度查看答題統計">
+        <button class="active" type="button" role="tab" aria-selected="true" data-stats-level="all">全部</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="1">L1</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="2">L2</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="3">L3</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="4">L4</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="5">L5</button>
+      </div>
+    </nav>
+    <div class="student-downloads" aria-label="下載個人學習數據">
+      <button id="download-student-overall" type="button"><i data-lucide="file-down"></i><span>總體數據</span></button>
+      <button id="download-student-mistakes" type="button"><i data-lucide="list-x"></i><span>錯題數據</span></button>
+      <span id="student-download-status" role="status" aria-live="polite"></span>
+    </div>
+
+    <section class="level-strip" aria-label="關卡進度">
+      <div class="level-copy">
+        <span id="level-kicker">LEVEL 1</span>
+        <strong id="level-title">直接代入</strong>
+      </div>
+      <div class="xp-group">
+        <div class="xp-label"><span>關卡經驗</span><strong id="xp-copy">0 / 500</strong></div>
+        <div class="xp-track" role="progressbar" aria-valuemin="0" aria-valuemax="500" aria-valuenow="0">
+          <span id="xp-bar"></span>
+        </div>
+      </div>
+      <div class="level-dots" aria-label="五個關卡">
+        <span class="active" data-level-dot="1">1</span>
+        <span data-level-dot="2">2</span>
+        <span data-level-dot="3">3</span>
+        <span data-level-dot="4">4</span>
+        <span data-level-dot="5">5</span>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <aside class="player-panel panel">
+        <div class="avatar-stage">
+          <img id="player-avatar" src="hero-lv1.webp" alt="星術學徒">
+          <span id="rank-chip">通項學徒</span>
+        </div>
+        <div class="mission-copy">
+          <span>本關重點</span>
+          <strong id="mission-title">把 n 代入通項</strong>
+          <p id="mission-hint">依照 Tn 的公式，求指定的項。</p>
+        </div>
+        <div class="reward-row">
+          <div class="reward-positive"><span>答對</span><strong>+15 XP</strong></div>
+          <div class="reward-negative"><span>答錯</span><strong>-10 XP</strong></div>
+        </div>
+      </aside>
+
+      <section class="practice-panel panel">
+        <div class="question-meta">
+          <span id="question-type">直接代入</span>
+          <span>第 <strong id="question-number">1</strong> 題</span>
+        </div>
+        <section class="battle-arena" aria-label="星術戰場">
+          <div class="battle-heading"><span>星序術式 <small>SEQUENCE ARTS</small></span><button id="sound-toggle" type="button" aria-pressed="false">音效：關</button></div>
+          <div class="combat-hud"><div><span>混沌序列巨龍</span><strong id="combat-hp">100%</strong></div><div class="combat-health"><span id="combat-hp-fill"></span></div></div>
+          <div class="battle-scene">
+            <div class="battle-floor"></div>
+            <div class="hero-3d-wrap"><img class="character-depth" src="hero-lv1.webp" alt="" aria-hidden="true"><img id="battle-hero" class="battle-hero" src="hero-lv1.webp" alt="星術學徒"></div>
+            <div class="monster-depth-wrap"><img class="character-depth" src="monster-lv7.webp" alt="" aria-hidden="true"><img id="battle-monster" class="battle-monster" src="monster-lv7.webp" alt="混沌序列巨龍"></div>
+            <div id="move-banner" aria-hidden="true"><small id="move-tag"></small><strong id="move-name"></strong></div>
+            <div id="vfx-overlay" aria-hidden="true"><img src="vfx-atlas.webp" alt=""></div>
+            <div id="frame-vfx" aria-hidden="true"><div class="core-fall-sheet"></div></div>
+            <canvas id="battle-canvas" aria-hidden="true"></canvas>
+            <div id="battle-damage" aria-hidden="true"></div>
+          </div>
+          <div class="cast-status"><div class="battle-caption" id="battle-caption" role="status">答對隨機施放六種星術</div><span id="cast-phase">就緒</span><span id="cast-time">—</span></div>
+          <div class="cast-track" aria-hidden="true"><span id="cast-fill"></span></div>
+          <div class="qi-hud"><span>連答紀錄</span><div id="qi-pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><strong id="qi-copy">0 連答</strong></div>
+          <div class="skill-previews" aria-label="六種星術技能">
+            <button type="button" data-skill="2" aria-label="試放潮汐裂斬"><span class="skill-glyph"><i data-lucide="waves"></i></span><strong>潮汐裂斬</strong><small>隨機</small></button>
+            <button type="button" data-skill="5" aria-label="試放熔核天墜"><span class="skill-glyph"><i data-lucide="flame"></i></span><strong>熔核天墜</strong><small>隨機</small></button>
+            <button type="button" data-skill="10" aria-label="試放蒼穹導束"><span class="skill-glyph"><i data-lucide="orbit"></i></span><strong>蒼穹導束</strong><small>隨機</small></button>
+            <button type="button" data-skill="3" aria-label="試放深淵絞界"><span class="skill-glyph"><i data-lucide="aperture"></i></span><strong>深淵絞界</strong><small>隨機</small></button>
+            <button type="button" data-skill="music" aria-label="試放星弦共鳴"><span class="skill-glyph"><i data-lucide="music-2"></i></span><strong>星弦共鳴</strong><small>隨機</small></button>
+            <button id="ultimate-preview" type="button" aria-label="試放星劍天降"><span class="skill-glyph"><i data-lucide="sword"></i></span><strong>星劍天降</strong><small>隨機</small></button>
+          </div>
+        </section>
+
+        <div id="pattern-preview" class="pattern-preview hidden" aria-label="圖案數列示意"></div>
+        <div id="question-math" class="math-question" aria-label="題目"></div>
+        <div class="equals-line"><span></span><strong>=</strong><span></span></div>
+        <div id="answer-display" class="answer-display empty" aria-live="polite">
+          <span class="answer-placeholder">?</span>
+        </div>
+        <div id="feedback" class="feedback" aria-live="assertive"></div>
+
+        <div id="keypad" class="keypad" aria-label="答案數字鍵盤">
+          <button type="button" data-key="7">7</button>
+          <button type="button" data-key="8">8</button>
+          <button type="button" data-key="9">9</button>
+          <button type="button" data-action="backspace" class="key-utility key-backspace" title="刪除" aria-label="刪除一位">⌫</button>
+          <button type="button" data-key="4">4</button>
+          <button type="button" data-key="5">5</button>
+          <button type="button" data-key="6">6</button>
+          <button type="button" data-action="clear" class="key-utility">清除</button>
+          <button type="button" data-key="1">1</button>
+          <button type="button" data-key="2">2</button>
+          <button type="button" data-key="3">3</button>
+          <button type="button" data-action="fraction" class="key-fraction"><span class="mini-fraction"><b>□</b><i></i><b>□</b></span></button>
+          <button type="button" data-action="sign" class="key-sign">−</button>
+          <button type="button" data-key="0">0</button>
+          <button type="button" data-action="decimal" class="key-decimal">.</button>
+          <button id="submit-answer" type="button" data-action="submit" class="key-submit" disabled>確認</button>
+        </div>
+        <div id="choice-answer" class="choice-answer hidden" aria-label="有或沒有">
+          <button type="button" data-boolean="true"><i data-lucide="circle-check-big"></i><span>有</span></button>
+          <button type="button" data-boolean="false"><i data-lucide="circle-x"></i><span>沒有</span></button>
+        </div>
+      </section>
+
+      <aside class="map-panel panel">
+        <div class="guardian" aria-label="混沌序列巨龍">
+          <img id="dragon-avatar" src="monster-lv7.webp" alt="混沌序列巨龍">
+          <div><span>FINAL BOSS</span><strong>混沌序列巨龍</strong></div>
+        </div>
+        <div class="level-dock">
+          <div class="map-heading">
+            <span>TRAINING MAP</span>
+            <strong>五階段挑戰</strong>
+          </div>
+          <ol class="level-map">
+          <li class="active" data-level-card="1">
+            <span>01</span>
+            <div><strong>直接代入</strong><small>一次通項求指定項</small></div>
+            <i data-lucide="check"></i>
+          </li>
+          <li data-level-card="2">
+            <span>02</span>
+            <div><strong>負數通項</strong><small>處理負號與減法</small></div>
+            <i data-lucide="lock-keyhole"></i>
+          </li>
+          <li data-level-card="3">
+            <span>03</span>
+            <div><strong>分數通項</strong><small>分子分母同時代入</small></div>
+            <i data-lucide="lock-keyhole"></i>
+          </li>
+          <li data-level-card="4">
+            <span>04</span>
+            <div><strong>圖案通項</strong><small>圓點圖案指定項</small></div>
+            <i data-lucide="lock-keyhole"></i>
+          </li>
+          <li data-level-card="5">
+            <span>05</span>
+            <div><strong>項目判斷</strong><small>指定數值是否存在</small></div>
+            <i data-lucide="lock-keyhole"></i>
+          </li>
+          </ol>
+          <div class="final-target"><span>最終目標</span><strong>完成 2,500 XP</strong></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="battle-effect-layer" class="battle-effect-layer" aria-hidden="true"></div>
+
+  <dialog id="level-dialog" class="level-dialog">
+    <img id="dialog-avatar" src="hero-lv2.webp" alt="角色升級">
+    <span id="dialog-kicker">LEVEL UP</span>
+    <h2 id="dialog-title">進入程度二</h2>
+    <p id="dialog-copy">新的運算挑戰已解鎖。</p>
+    <button id="continue-button" type="button">開始下一關</button>
+  </dialog>
+
+  <dialog id="password-dialog" class="confirm-dialog password-dialog">
+    <form id="password-form">
+      <span class="dialog-icon"><i data-lucide="lock-keyhole"></i></span>
+      <h2 id="password-dialog-title">輸入密碼</h2>
+      <p id="password-dialog-copy">請輸入管理密碼。</p>
+      <label class="password-field">密碼
+        <input id="action-password" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="password-error" class="password-error" role="alert"></p>
+      <div>
+        <button type="button" onclick="this.closest('dialog').close()">取消</button>
+        <button class="danger" type="submit">確認</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="reset-dialog" class="confirm-dialog">
+    <h2>重設全部進度？</h2>
+    <p>五個關卡的經驗與作答統計會回到起點。</p>
+    <div>
+      <button type="button" onclick="this.closest('dialog').close()">取消</button>
+      <button id="confirm-reset" class="danger" type="button">重設</button>
+    </div>
+  </dialog>
+</body>
+</html>
