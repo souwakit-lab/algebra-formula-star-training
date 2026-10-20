@@ -189,5 +189,20 @@
     }
     return question(safeLevel, expression, expression, LEVELS[safeLevel].hint);
   }
-  return { LEVELS, normalizeInput, parsePolynomial, canonical, display, formatCoefficients, generateQuestion };
+  const LEVEL_XP = 150;
+  function applyResult(progress, correct) {
+    const next = { ...progress };
+    next.mistakes = correct ? 0 : Number(next.mistakes || 0) + 1;
+    next.streak = correct ? Number(next.streak || 0) + 1 : 0;
+    const protectedPenalty = !correct && next.mistakes > 3;
+    const xpChange = correct ? 15 : protectedPenalty ? 0 : -10;
+    next.xp = Math.max(0, Number(next.xp || 0) + xpChange);
+    next.score = Math.max(0, Number(next.score || 0) + xpChange);
+    const leveledUp = next.xp >= LEVEL_XP && next.level < 6;
+    const completed = next.xp >= LEVEL_XP && next.level === 6;
+    if (leveledUp) { next.xp -= LEVEL_XP; next.level += 1; }
+    if (completed) next.xp = LEVEL_XP;
+    return { progress:next, xpChange, protectedPenalty, leveledUp, completed, protectionActive:next.mistakes >= 3 };
+  }
+  return { LEVELS, LEVEL_XP, applyResult, normalizeInput, parsePolynomial, canonical, display, formatCoefficients, generateQuestion };
 });

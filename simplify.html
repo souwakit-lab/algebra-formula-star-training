@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="simplify.css?v=20261020d">
   <link rel="stylesheet" href="battle-ui.css?v=20261020d">
   <script defer src="math-renderer.js?v=20261021a"></script>
-  <script defer src="simplify-core.js?v=20261021c"></script>
+  <script defer src="simplify-core.js?v=20261021d"></script>
   <script defer src="battle.js?v=20261020d"></script>
-  <script defer src="simplify.js?v=20261021a"></script>
+  <script defer src="simplify.js?v=20261021b"></script>
 </head>
 <body>
   <main class="game-shell">
@@ -20,11 +20,11 @@
     </header>
     <section class="level-strip">
       <div><span id="level-label">LEVEL 1</span><strong id="level-title">合併同類項</strong></div>
-      <div class="xp"><span id="progress-copy">0 / 5 題</span><div><i id="progress-bar"></i></div></div>
+      <div class="xp"><span id="progress-copy">0 / 150 XP</span><div role="progressbar" aria-label="本關經驗值" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><i id="progress-bar"></i></div></div>
       <div class="level-dots" aria-label="六個關卡"><b class="active">1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b></div>
     </section>
     <section class="layout">
-      <aside class="side-card character-card"><div class="avatar-stage"><img id="player-avatar" src="hero-lv1.webp" alt="星術學徒"><span>初級魔法學徒</span></div><span class="eyebrow">CURRENT MISSION</span><h2 id="mission-title">認出相同的未知數及指數</h2><p id="mission-hint">只合併同類項，常數項要保留。</p><div class="rules"><span>答對 <b>+15</b></span><span>答錯 <b>−10</b></span></div></aside>
+      <aside class="side-card character-card"><div class="avatar-stage"><img id="player-avatar" src="hero-lv1.webp" alt="星術學徒"><span>初級魔法學徒</span></div><span class="eyebrow">CURRENT MISSION</span><h2 id="mission-title">認出相同的未知數及指數</h2><p id="mission-hint">只合併同類項，常數項要保留。</p><div class="rules"><span>答對 <b>+15 XP</b></span><span>答錯 <b>−10 XP</b><small>連錯 3 題後保護</small></span></div></aside>
       <section class="practice-card">
         <div class="question-meta"><span id="question-type">合併同類項</span><span>第 <b id="question-number">1</b> 題</span></div>
         <div class="instruction">化簡下列代數式</div>
