@@ -152,28 +152,38 @@
   function display(value) { return canonical(value).replace(/\^2/g, "²").replace(/\^3/g, "³").replace(/\^4/g, "⁴").replace(/\*/g, "×").replace(/\//g, "÷").replace(/-/g, "−").replace(/\+/g, "＋"); }
   function question(level, expression, answer, hint) { return { level, type:LEVELS[level].title, expression, answer:canonical(answer), hint }; }
   function generateQuestion(level, rng = Math.random) {
-    const pools = {
-      1: [
-        ["8a−a", "7a"], ["−3x＋6x", "3x"], ["6y−11y", "−5y"], ["4b＋2b", "6b"],
-      ],
-      2: [
-        ["a＋2a＋3a＋4", "6a＋4"], ["m＋2n＋4m−3n", "5m−n"], ["2＋4p−p−p", "2＋2p"], ["−5p−9p＋3", "−14p＋3"],
-      ],
-      3: [
-        ["3x×2−4x", "2x"], ["3w−8w÷2", "−w"], ["7x×3−x", "20x"], ["4×3y÷6", "2y"],
-      ],
-      4: [
-        ["3a×2a×a", "6a^3"], ["4d×2d×d", "8d^3"], ["y×y×(−y)×(−y)×z", "y^4z"], ["b×(−b)×(−b)×c×(−c)", "−b^3c^2"],
-      ],
-      5: [
-        ["12x÷4−x", "2x"], ["6p＋2p÷2×3", "9p"], ["−4q−7q", "−11q"], ["6u−12u−4v", "−6u−4v"],
-      ],
-      6: [
-        ["2a＋3b−a＋5b", "a＋8b"], ["8m÷2＋3m−m", "6m"], ["2x×x＋3x^2−x^2", "4x^2"], ["−2p×3＋p＋4p", "−p"],
-      ],
-    };
-    const item = pools[Math.min(6, Math.max(1, Number(level) || 1))][rand(rng, pools[level].length)];
-    return question(level, item[0], item[1], LEVELS[level].hint);
+    const safeLevel = Math.min(6, Math.max(1, Number(level) || 1));
+    const number = (min, max) => min + rand(rng, max - min + 1);
+    const nonZero = (min = -10, max = 10) => { let value = 0; while (!value) value = number(min, max); return value; };
+    const variable = ["a", "b", "m", "n", "p", "q", "x", "y", "z"][rand(rng, 9)];
+    const secondVariable = variable === "x" ? "y" : "x";
+    const signed = (value) => value >= 0 ? `＋${value}` : `${value}`;
+    let expression;
+    if (safeLevel === 1) {
+      const a = nonZero(-10, 10); const b = nonZero(-10, 10);
+      expression = `${a}${variable}${signed(b)}${variable}`;
+    } else if (safeLevel === 2) {
+      const a = nonZero(-10, 10); const b = nonZero(-10, 10); const c = number(-20, 20);
+      expression = `${a}${variable}${signed(b)}${secondVariable}${signed(c)}`;
+    } else if (safeLevel === 3) {
+      const a = nonZero(-10, 10); const b = number(1, 12); const multiplier = number(2, 5);
+      const divisor = number(2, 5); const quotientFactor = nonZero(-4, 4); const divisibleTerm = divisor * quotientFactor;
+      expression = rand(rng, 2) ? `${a}${variable}×${multiplier}${signed(-b)}${variable}` : `${a}${variable}${signed(divisibleTerm)}${variable}÷${divisor}`;
+    } else if (safeLevel === 4) {
+      const a = number(2, 5); const b = number(2, 5); const powerVariable = variable;
+      expression = rand(rng, 2) ? `${a}${powerVariable}×${b}${powerVariable}×${powerVariable}` : `${powerVariable}×${powerVariable}×(−${powerVariable})×(−${powerVariable})×${secondVariable}`;
+    } else if (safeLevel === 5) {
+      const a = nonZero(-10, 10); const divisor = number(2, 5); const quotientFactor = nonZero(-4, 4); const divided = divisor * quotientFactor;
+      if (rand(rng, 3) === 0) expression = `${a}${variable}−${Math.abs(divided)}${variable}÷${divisor}`;
+      else if (rand(rng, 2)) expression = `${a}${variable}＋${divided}${variable}÷${divisor}×${number(2, 4)}`;
+      else expression = `${a}${variable}−${number(1, 10)}${variable}−${number(1, 10)}${secondVariable}`;
+    } else {
+      const a = nonZero(-10, 10); const b = nonZero(-10, 10); const c = nonZero(-10, 10); const divisor = number(2, 5);
+      if (rand(rng, 3) === 0) expression = `${a}${variable}×${variable}＋${b}${variable}^2−${c}${variable}^2`;
+      else if (rand(rng, 2)) expression = `${a}${variable}^2÷${divisor}＋${b}${variable}^2−${c}${variable}^2`;
+      else expression = `${a}${variable}×${number(2, 4)}＋${b}${secondVariable}${signed(-c)}${variable}＋${number(-10, 10)}`;
+    }
+    return question(safeLevel, expression, expression, LEVELS[safeLevel].hint);
   }
   return { LEVELS, normalizeInput, parsePolynomial, canonical, display, generateQuestion };
 });
