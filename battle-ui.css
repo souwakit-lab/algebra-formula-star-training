@@ -36,25 +36,6 @@
 .sequence-banner small { color:var(--skill-color); font:800 9px/1.2 "Space Grotesk",sans-serif; letter-spacing:.18em; }
 .sequence-banner strong { margin-top:3px; font-size:clamp(20px,2.5vw,30px); letter-spacing:.08em; }
 .sequence-banner span { margin-top:3px; color:#9fb2c8; font-size:10px; }
-.sequence-sprite {
-  position:absolute;
-  left:19%;
-  right:10%;
-  top:20%;
-  bottom:10%;
-  opacity:0;
-  background-image:url("vfx-atlas.webp");
-  background-repeat:no-repeat;
-  background-size:500% 100%;
-  mix-blend-mode:screen;
-  filter:drop-shadow(0 0 18px var(--skill-color));
-  animation:sequence-sprite 1.75s ease both;
-}
-.sequence-sprite[data-skill="2"] { background-position:0 0; }
-.sequence-sprite[data-skill="5"] { background-position:25% 0; }
-.sequence-sprite[data-skill="10"] { background-position:50% 0; }
-.sequence-sprite[data-skill="3"] { background-position:75% 0; }
-.sequence-sprite[data-skill="ultimate"] { background-position:100% 0; }
 .sequence-flash { position:absolute; inset:0; background:var(--skill-color); mix-blend-mode:screen; animation:sequence-flash .42s ease-out both; }
 .sequence-damage {
   position:absolute;
@@ -71,7 +52,6 @@
 
 @keyframes sequence-vignette { 0%,100% { opacity:0; } 12%,78% { opacity:1; } }
 @keyframes sequence-banner { 0% { opacity:0; transform:translate(-56%,-8px); } 16%,62% { opacity:1; transform:translate(-50%,0); } 100% { opacity:0; transform:translate(-45%,0); } }
-@keyframes sequence-sprite { 0%,13% { opacity:0; transform:translate(-22%,10%) scale(.45); } 38% { opacity:.78; transform:translate(-3%,1%) scale(.94); } 70% { opacity:.9; transform:translate(8%,-2%) scale(1.12); } 100% { opacity:0; transform:translate(18%,-6%) scale(1.28); } }
 @keyframes sequence-flash { 0% { opacity:.42; } 100% { opacity:0; } }
 @keyframes sequence-damage { 0% { opacity:0; transform:translate(-50%,-20%) scale(.6); } 22% { opacity:1; transform:translate(-50%,-65%) scale(1.15); } 100% { opacity:0; transform:translate(-50%,-145%) scale(.9); } }
 @keyframes sequence-caster { 0%,100% { transform:translateX(0) scale(1); } 26% { transform:translateX(10px) scale(1.035); } 58% { transform:translateX(16px) scale(1.055); } }
@@ -80,11 +60,10 @@
 @keyframes sequence-monster-hit { 18% { transform:translateX(10px) scaleX(-1); filter:brightness(1.8) drop-shadow(0 0 18px #fff); } 48% { transform:translateX(-7px) scaleX(-1); } 72% { transform:translateX(4px) scaleX(-1); } }
 
 @media (max-width:760px) {
-  .sequence-sprite { left:4%; right:4%; top:10%; bottom:8%; }
   .sequence-banner { top:72px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .sequence-banner,.sequence-sprite,.sequence-flash,.sequence-damage,
+  .sequence-banner,.sequence-flash,.sequence-damage,
   #player-avatar.sequence-casting,#dragon-avatar.sequence-attacking,
   #player-avatar.sequence-hit,#dragon-avatar.sequence-hit { animation-duration:.01ms !important; }
 }
