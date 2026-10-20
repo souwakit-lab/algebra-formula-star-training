@@ -1,6 +1,6 @@
 (() => {
   const core = window.SimplifyGameCore;
-  const renderMath = (node, value) => window.RationalMathRenderer.render(node, String(value).replace(/\^2/g, "²").replace(/\^3/g, "³").replace(/\^4/g, "⁴").replace(/\*/g, "\\times").replace(/[＋+]/g, "+").replace(/[−-]/g, "−"));
+  const renderMath = (node, value) => window.RationalMathRenderer.render(node, String(value).replace(/\*/g, "\\times").replace(/[＋+]/g, "+").replace(/[−-]/g, "−"));
   const $ = (id) => document.getElementById(id);
   const levelTotal = 5;
   let level = 1; let questionNumber = 0; let score = 0; let streak = 0; let solvedInLevel = 0; let question; let entry = ""; let locked = false;

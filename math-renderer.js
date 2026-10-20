@@ -93,19 +93,23 @@
     const source = String(value || "");
     for (let index = 0; index < source.length; index += 1) {
       const character = source[index];
-      const next = source[index + 1];
       const isLetter = /[A-Za-z]/.test(character);
       const isNumber = /[0-9]/.test(character);
       const isOperator = "=+-−×÷()[]{}：:，,。/".includes(character);
-      if (isLetter && (next === "²" || next === "³")) {
+      const baseText = isNumber ? source.slice(index).match(/^\d+(?:\.\d+)?/)[0] : character;
+      const afterBase = index + baseText.length;
+      const power = source.slice(afterBase).match(/^\^(?:\{(\d+)\}|(\d+))/);
+      const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+      const unicodePower = source.slice(afterBase).match(/^[⁰¹²³⁴⁵⁶⁷⁸⁹]+/);
+      if ((isLetter || isNumber) && (power || unicodePower)) {
         const superscript = document.createElementNS("http://www.w3.org/1998/Math/MathML", "msup");
-        const base = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mi");
+        const base = document.createElementNS("http://www.w3.org/1998/Math/MathML", isNumber ? "mn" : "mi");
         const exponent = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mn");
-        base.textContent = character;
-        exponent.textContent = next === "²" ? "2" : "3";
+        base.textContent = baseText;
+        exponent.textContent = power ? (power[1] || power[2]) : [...unicodePower[0]].map((digit) => superscripts.indexOf(digit)).join("");
         superscript.append(base, exponent);
         parent.append(superscript);
-        index += 1;
+        index = afterBase + (power || unicodePower)[0].length - 1;
       } else {
         const tag = isLetter ? "mi" : isNumber ? "mn" : isOperator ? "mo" : "mtext";
         const node = document.createElementNS("http://www.w3.org/1998/Math/MathML", tag);
