@@ -5,18 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
   <title>化簡代數式星術訓練</title>
-  <link rel="stylesheet" href="simplify.css?v=20261020d">
+  <link rel="stylesheet" href="simplify.css?v=20261021a">
   <link rel="stylesheet" href="battle-ui.css?v=20261020d">
   <script defer src="math-renderer.js?v=20261021a"></script>
   <script defer src="simplify-core.js?v=20261021d"></script>
   <script defer src="battle.js?v=20261020d"></script>
-  <script defer src="simplify.js?v=20261021b"></script>
+  <script defer src="simplify.js?v=20261021c"></script>
 </head>
 <body>
-  <main class="game-shell">
+  <section id="login-screen" class="login-screen">
+    <div class="login-panel">
+      <div class="login-brand"><span>S</span><div><small>ALGEBRA SIMPLIFY ACADEMY</small><h1>化簡代數式星術訓練</h1></div></div>
+      <div class="login-art"><img src="hero-lv1.webp" alt="星術學徒"></div>
+      <label>班別<select id="class-select" aria-label="選擇班別"></select></label>
+      <label>學號<select id="id-select" aria-label="選擇學號"></select></label>
+      <div class="student-preview"><span>學生</span><strong id="student-name-display">請選擇班別與學號</strong></div>
+      <button id="login-button" type="button">進入訓練</button>
+    </div>
+  </section>
+  <main id="game-shell" class="game-shell hidden" aria-hidden="true">
     <header class="topbar">
       <div class="brand"><span class="brand-mark">S</span><div><small>ALGEBRA SIMPLIFY ACADEMY</small><h1>化簡代數式星術訓練</h1></div></div>
-      <div class="scoreboard"><span>總分</span><strong id="score">0</strong><span>連勝 <b id="streak">0</b></span></div>
+      <div class="scoreboard"><span class="student-identity"><b id="player-class">尚未登入</b><strong id="player-name">學生</strong></span><button id="logout-button" type="button" title="切換學生">切換</button><span>總分</span><strong id="score">0</strong><span>連勝 <b id="streak">0</b></span></div>
     </header>
     <section class="level-strip">
       <div><span id="level-label">LEVEL 1</span><strong id="level-title">合併同類項</strong></div>
