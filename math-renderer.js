@@ -26,7 +26,10 @@
   }
 
   function tokenize(tex) {
-    const source = String(tex || "").replace(/\\left/g, "").replace(/\\right/g, "");
+    let source = String(tex || "").replace(/\\left/g, "").replace(/\\right/g, "");
+    // Accept simple a/b notation as a fallback when a question source omits
+    // the internal fraction marker.
+    source = source.replace(/([A-Za-z0-9]+(?:[²³⁻⁺])?|\([^()]+\))\/([A-Za-z0-9]+(?:[²³⁻⁺])?|\([^()]+\))/g, "\\frac{$1}{$2}");
     const tokens = [];
     let buffer = "";
     let cursor = 0;
@@ -86,30 +89,63 @@
       : token.value).join("");
   }
 
+  function appendMathText(parent, value) {
+    const source = String(value || "");
+    for (let index = 0; index < source.length; index += 1) {
+      const character = source[index];
+      const next = source[index + 1];
+      const isLetter = /[A-Za-z]/.test(character);
+      const isNumber = /[0-9]/.test(character);
+      const isOperator = "=+-−×÷()[]{}：:，,。/".includes(character);
+      if (isLetter && (next === "²" || next === "³")) {
+        const superscript = document.createElementNS("http://www.w3.org/1998/Math/MathML", "msup");
+        const base = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mi");
+        const exponent = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mn");
+        base.textContent = character;
+        exponent.textContent = next === "²" ? "2" : "3";
+        superscript.append(base, exponent);
+        parent.append(superscript);
+        index += 1;
+      } else {
+        const tag = isLetter ? "mi" : isNumber ? "mn" : isOperator ? "mo" : "mtext";
+        const node = document.createElementNS("http://www.w3.org/1998/Math/MathML", tag);
+        node.textContent = character;
+        parent.append(node);
+      }
+    }
+  }
+
   function render(element, tex) {
     const expression = document.createElement("span");
     expression.className = "math-expression";
+    const math = document.createElementNS("http://www.w3.org/1998/Math/MathML", "math");
+    math.setAttribute("display", "inline");
+    const row = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mrow");
     tokenize(tex).forEach((token) => {
       if (token.type === "text") {
-        expression.append(document.createTextNode(token.value));
+        appendMathText(row, token.value);
         return;
       }
       if (token.type === "subscript") {
-        const subscript = document.createElement("sub");
-        subscript.className = "math-subscript";
-        subscript.textContent = token.value;
-        expression.append(subscript);
+        const subscript = document.createElementNS("http://www.w3.org/1998/Math/MathML", "msub");
+        const base = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mi");
+        const sub = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mn");
+        base.textContent = "_";
+        sub.textContent = token.value;
+        subscript.append(base, sub);
+        row.append(subscript);
         return;
       }
-      const fraction = document.createElement("span");
-      fraction.className = "math-fraction";
-      const numerator = document.createElement("span");
-      const denominator = document.createElement("span");
-      numerator.textContent = token.numerator;
-      denominator.textContent = token.denominator;
+      const fraction = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mfrac");
+      const numerator = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mtext");
+      const denominator = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mtext");
+      appendMathText(numerator, token.numerator);
+      appendMathText(denominator, token.denominator);
       fraction.append(numerator, denominator);
-      expression.append(fraction);
+      row.append(fraction);
     });
+    math.append(row);
+    expression.append(math);
     element.textContent = "";
     element.append(expression);
     element.setAttribute("aria-label", plainText(tex));

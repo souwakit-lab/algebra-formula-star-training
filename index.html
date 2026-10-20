@@ -4,21 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
-  <title>通項公式星術訓練</title>
-  <link rel="stylesheet" href="styles.css?v=20261020f">
+  <title>代數式與公式星術訓練</title>
+  <link rel="stylesheet" href="styles.css?v=20261020g">
   <link rel="stylesheet" href="battle-ui.css?v=20261020c">
   <script async id="lucide-script" src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script defer src="vendor/fraction.min.js"></script>
-  <script defer src="math-renderer.js?v=20261020b"></script>
-  <script defer src="game-core.js?v=20261020c"></script>
+  <script defer src="math-renderer.js?v=20261020f"></script>
+  <script defer src="game-core.js?v=20261020k"></script>
   <script defer src="config.js"></script>
   <script defer src="battle.js?v=20261020d"></script>
-  <script defer src="app.js?v=20261020e"></script>
+  <script defer src="app.js?v=20261020h"></script>
 </head>
 <body>
   <section id="login-screen" class="login-screen">
     <div class="login-panel">
-      <div class="login-brand"><span>T</span><div><small>GENERAL TERM ACADEMY</small><h1>通項公式星術訓練</h1></div></div>
+      <div class="login-brand"><span>T</span><div><small>GENERAL TERM ACADEMY</small><h1>代數式與公式星術訓練</h1></div></div>
       <div class="login-art"><img src="hero-lv1.webp" alt="星術學徒"></div>
       <label>班別<select id="class-select"></select></label>
       <label>學號<select id="id-select"></select></label>
@@ -33,7 +33,7 @@
         <span class="brand-mark">T</span>
         <div>
           <p>GENERAL TERM ACADEMY</p>
-          <h1>通項公式星術訓練</h1>
+          <h1>代數式與公式星術訓練</h1>
         </div>
       </div>
       <div class="header-stats" aria-label="練習統計">
@@ -61,6 +61,7 @@
         <button type="button" role="tab" aria-selected="false" data-stats-level="3">L3</button>
         <button type="button" role="tab" aria-selected="false" data-stats-level="4">L4</button>
         <button type="button" role="tab" aria-selected="false" data-stats-level="5">L5</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="6">L6</button>
       </div>
     </nav>
     <div class="student-downloads" aria-label="下載個人學習數據">
@@ -72,7 +73,7 @@
     <section class="level-strip" aria-label="關卡進度">
       <div class="level-copy">
         <span id="level-kicker">LEVEL 1</span>
-        <strong id="level-title">直接代入</strong>
+        <strong id="level-title">公式或代數式</strong>
       </div>
       <div class="xp-group">
         <div class="xp-label"><span>關卡經驗</span><strong id="xp-copy">0 / 150</strong></div>
@@ -80,12 +81,13 @@
           <span id="xp-bar"></span>
         </div>
       </div>
-      <div class="level-dots" aria-label="五個關卡">
+      <div class="level-dots" aria-label="六個關卡">
         <span class="active" data-level-dot="1">1</span>
         <span data-level-dot="2">2</span>
         <span data-level-dot="3">3</span>
         <span data-level-dot="4">4</span>
         <span data-level-dot="5">5</span>
+        <span data-level-dot="6">6</span>
       </div>
     </section>
 
@@ -97,18 +99,18 @@
         </div>
         <div class="mission-copy">
           <span>本關重點</span>
-          <strong id="mission-title">把 n 代入通項</strong>
-          <p id="mission-hint">依照 Tn 的公式，求指定的項。</p>
+          <strong id="mission-title">分辨公式與代數式</strong>
+          <p id="mission-hint">留意等號及變數之間的關係。</p>
         </div>
         <div class="reward-row">
           <div class="reward-positive"><span>答對</span><strong>+15 XP</strong></div>
-          <div class="reward-negative"><span>答錯</span><strong>-10 XP</strong></div>
+          <div class="reward-negative"><span>答錯</span><strong>-10 XP</strong><small>連錯 3 題後保護</small></div>
         </div>
       </aside>
 
       <section class="practice-panel panel">
         <div class="question-meta">
-          <span id="question-type">直接代入</span>
+          <span id="question-type">公式或代數式</span>
           <span>第 <strong id="question-number">1</strong> 題</span>
         </div>
         <div id="pattern-preview" class="pattern-preview hidden" aria-label="圖案數列示意"></div>
@@ -137,9 +139,7 @@
           <button type="button" data-action="decimal" class="key-decimal">.</button>
           <button id="submit-answer" type="button" data-action="submit" class="key-submit" disabled>確認</button>
         </div>
-        <div id="choice-answer" class="choice-answer hidden" aria-label="有或沒有">
-          <button type="button" data-boolean="true"><i data-lucide="circle-check-big"></i><span>有</span></button>
-          <button type="button" data-boolean="false"><i data-lucide="circle-x"></i><span>沒有</span></button>
+        <div id="choice-answer" class="choice-answer hidden" aria-label="選擇答案">
         </div>
       </section>
 
@@ -151,36 +151,41 @@
         <div class="level-dock">
           <div class="map-heading">
             <span>TRAINING MAP</span>
-            <strong>五階段挑戰</strong>
+            <strong>六階段挑戰</strong>
           </div>
           <ol class="level-map">
           <li class="active" data-level-card="1">
             <span>01</span>
-            <div><strong>直接代入</strong><small>一次通項求指定項</small></div>
+            <div><strong>公式或代數式</strong><small>判斷公式與代數式</small></div>
             <i data-lucide="check"></i>
           </li>
           <li data-level-card="2">
             <span>02</span>
-            <div><strong>負數通項</strong><small>處理負號與減法</small></div>
+            <div><strong>單變數代入</strong><small>正負數、平方及分式</small></div>
             <i data-lucide="lock-keyhole"></i>
           </li>
           <li data-level-card="3">
             <span>03</span>
-            <div><strong>分數通項</strong><small>分子分母同時代入</small></div>
+            <div><strong>雙變數代入</strong><small>基礎公式代入</small></div>
             <i data-lucide="lock-keyhole"></i>
           </li>
           <li data-level-card="4">
             <span>04</span>
-            <div><strong>圖案通項</strong><small>圓點圖案指定項</small></div>
+            <div><strong>進階代入</strong><small>負數、括號及分式</small></div>
             <i data-lucide="lock-keyhole"></i>
           </li>
           <li data-level-card="5">
             <span>05</span>
-            <div><strong>項目判斷</strong><small>指定數值是否存在</small></div>
+            <div><strong>生活公式</strong><small>利潤與薪金情境</small></div>
+            <i data-lucide="lock-keyhole"></i>
+          </li>
+          <li data-level-card="6">
+            <span>06</span>
+            <div><strong>圖形公式</strong><small>先寫公式再求周界</small></div>
             <i data-lucide="lock-keyhole"></i>
           </li>
           </ol>
-          <div class="final-target"><span>最終目標</span><strong>完成 750 XP</strong></div>
+          <div class="final-target"><span>最終目標</span><strong>完成 900 XP</strong></div>
         </div>
       </aside>
     </div>
@@ -214,7 +219,7 @@
 
   <dialog id="reset-dialog" class="confirm-dialog">
     <h2>重設全部進度？</h2>
-    <p>五個關卡的經驗與作答統計會回到起點。</p>
+    <p>六個關卡的經驗與作答統計會回到起點。</p>
     <div>
       <button type="button" onclick="this.closest('dialog').close()">取消</button>
       <button id="confirm-reset" class="danger" type="button">重設</button>

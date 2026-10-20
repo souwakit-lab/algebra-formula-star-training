@@ -105,17 +105,19 @@ button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
 .reward-row strong { font: 700 14px "Space Grotesk", sans-serif; }
 .reward-positive strong { color: var(--mint); }
 .reward-negative strong { color: var(--coral); }
+.reward-negative small { display:block; margin-top:3px; color:var(--muted); font-size:10px; }
 
 .practice-panel { display: flex; flex-direction: column; align-items: center; padding: 18px clamp(16px, 4vw, 46px) 24px; }
 .question-meta { display: flex; justify-content: space-between; width: 100%; color: var(--muted); font-size: 12px; }
 .question-meta > span:first-child { color: var(--sky); font-weight: 700; }
 .math-question { display: grid; place-items: center; width: 100%; min-height: 145px; margin-top: 10px; color: var(--text); font-size: clamp(28px, 5vw, 50px); }
 .math-expression { display: inline-block; max-width: 100%; white-space: pre-wrap; line-height: 1.15; text-align: center; }
+.math-expression math { font-family: "Cambria Math", "STIX Two Math", "Noto Sans Math", serif; }
 .math-subscript { margin-left:.02em; font-size:.58em; line-height:0; vertical-align:-.32em; }
-.math-fraction { display: inline-grid; grid-template-rows: auto auto; min-width: 1.05em; margin: 0 .1em; font-size: .82em; line-height: 1; text-align: center; vertical-align: middle; }
-.math-fraction > span { padding: .04em .16em; }
-.math-fraction > span:first-child { border-bottom: .065em solid currentColor; padding-bottom: .1em; }
-.math-fraction > span:last-child { padding-top: .1em; }
+.math-fraction { display: inline-flex; flex-direction: column; align-items: stretch; justify-content: center; min-width: 1.15em; margin: 0 .12em; font-size: .78em; line-height: 1; text-align: center; vertical-align: middle; }
+.math-fraction > span { display: block; padding: .04em .18em; white-space: nowrap; }
+.math-fraction > span:first-child { border-bottom: .065em solid currentColor; padding-bottom: .12em; }
+.math-fraction > span:last-child { padding-top: .12em; }
 .equals-line { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; width: min(500px, 100%); color: var(--muted); }
 .equals-line span { height: 1px; background: var(--line); }
 .equals-line strong { font: 700 22px "Space Grotesk", sans-serif; }
@@ -339,6 +341,7 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
 .choice-answer button:first-child { border-color:rgba(72,214,162,.65); color:var(--mint); }
 .choice-answer button:last-child { border-color:rgba(240,100,120,.65); color:var(--coral); }
 .choice-answer button:hover:not(:disabled) { background:#2a3953; }
+.choice-answer button.selected { border-color:var(--yellow); background:#35435c; color:var(--yellow); box-shadow:0 0 0 2px rgba(255,205,88,.25); }
 .choice-answer button:disabled { opacity:.48; cursor:default; }
 .choice-answer svg { width:25px; }
 .hidden { display:none !important; }
@@ -346,7 +349,7 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
 .avatar-stage img { width:min(235px,100%); max-height:265px; }
 
 @media (max-width:900px) {
-  .level-map { grid-template-columns:repeat(5,1fr); }
+  .level-map { grid-template-columns:repeat(6,1fr); }
 }
 
 @media (max-width:760px) {

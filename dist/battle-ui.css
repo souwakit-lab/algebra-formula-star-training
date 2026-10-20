@@ -1,0 +1,69 @@
+/* Six random skills staged across the original left-character/right-monster layout. */
+.battle-effect-layer {
+  position:fixed;
+  inset:0;
+  z-index:100;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .12s ease;
+}
+.battle-effect-layer.is-active { opacity:1; }
+.battle-effect-layer::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:0;
+  background:radial-gradient(ellipse at 50% 55%,rgba(35,72,112,.22),rgba(5,9,17,.08) 52%,transparent 76%);
+}
+.battle-effect-layer.is-active::before { animation:sequence-vignette 1.9s ease both; }
+.battle-effect-layer.enemy-active::before { background:radial-gradient(ellipse at 50% 55%,rgba(142,48,34,.2),transparent 72%); }
+.sequence-effect-canvas { position:absolute; inset:0; width:100%; height:100%; }
+.sequence-banner {
+  position:absolute;
+  top:clamp(72px,12vh,126px);
+  left:50%;
+  min-width:220px;
+  padding:9px 18px 10px;
+  border-left:3px solid var(--skill-color);
+  color:#edf7ff;
+  background:linear-gradient(90deg,rgba(5,10,18,.94),rgba(11,19,30,.78),transparent);
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));
+  transform:translateX(-50%);
+  animation:sequence-banner 1.8s ease both;
+}
+.sequence-banner small,.sequence-banner strong,.sequence-banner span { display:block; }
+.sequence-banner small { color:var(--skill-color); font:800 9px/1.2 "Space Grotesk",sans-serif; letter-spacing:.18em; }
+.sequence-banner strong { margin-top:3px; font-size:clamp(20px,2.5vw,30px); letter-spacing:.08em; }
+.sequence-banner span { margin-top:3px; color:#9fb2c8; font-size:10px; }
+.sequence-flash { position:absolute; inset:0; background:var(--skill-color); mix-blend-mode:screen; animation:sequence-flash .42s ease-out both; }
+.sequence-damage {
+  position:absolute;
+  color:#fff;
+  font:900 clamp(25px,4vw,44px)/1 "Space Grotesk",sans-serif;
+  text-shadow:0 0 18px var(--skill-color),0 3px 3px rgba(0,0,0,.8);
+  transform:translate(-50%,-50%);
+  animation:sequence-damage .85s ease-out both;
+}
+#player-avatar.sequence-casting { animation:sequence-caster 1.1s ease both; filter:brightness(1.2) drop-shadow(0 0 16px #86e8ff); }
+#dragon-avatar.sequence-attacking { animation:sequence-dragon 1s ease both; filter:brightness(1.18) drop-shadow(0 0 16px #ff7048); }
+#player-avatar.sequence-hit { animation:sequence-player-hit .5s ease; }
+#dragon-avatar.sequence-hit { animation:sequence-monster-hit .5s ease; }
+
+@keyframes sequence-vignette { 0%,100% { opacity:0; } 12%,78% { opacity:1; } }
+@keyframes sequence-banner { 0% { opacity:0; transform:translate(-56%,-8px); } 16%,62% { opacity:1; transform:translate(-50%,0); } 100% { opacity:0; transform:translate(-45%,0); } }
+@keyframes sequence-flash { 0% { opacity:.42; } 100% { opacity:0; } }
+@keyframes sequence-damage { 0% { opacity:0; transform:translate(-50%,-20%) scale(.6); } 22% { opacity:1; transform:translate(-50%,-65%) scale(1.15); } 100% { opacity:0; transform:translate(-50%,-145%) scale(.9); } }
+@keyframes sequence-caster { 0%,100% { transform:translateX(0) scale(1); } 26% { transform:translateX(10px) scale(1.035); } 58% { transform:translateX(16px) scale(1.055); } }
+@keyframes sequence-dragon { 0%,100% { transform:translateX(0) scaleX(-1); } 34% { transform:translateX(-14px) scale(-1.045,1.045); } }
+@keyframes sequence-player-hit { 18% { transform:translateX(-9px); filter:brightness(1.8) drop-shadow(0 0 18px #ff7048); } 48% { transform:translateX(7px); } 72% { transform:translateX(-4px); } }
+@keyframes sequence-monster-hit { 18% { transform:translateX(10px) scaleX(-1); filter:brightness(1.8) drop-shadow(0 0 18px #fff); } 48% { transform:translateX(-7px) scaleX(-1); } 72% { transform:translateX(4px) scaleX(-1); } }
+
+@media (max-width:760px) {
+  .sequence-banner { top:72px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .sequence-banner,.sequence-flash,.sequence-damage,
+  #player-avatar.sequence-casting,#dragon-avatar.sequence-attacking,
+  #player-avatar.sequence-hit,#dragon-avatar.sequence-hit { animation-duration:.01ms !important; }
+}

@@ -80,18 +80,18 @@ function renderDashboard(data) {
 
 function normalizePlayerLevel(raw) {
   const player = { ...raw };
-  player.level = Math.min(5, Math.max(1, Number(player.level) || 1));
+  player.level = Math.min(6, Math.max(1, Number(player.level) || 1));
   player.xp = Math.max(0, Number(player.xp) || 0);
-  while (player.level < 5 && player.xp >= 150) {
+  while (player.level < 6 && player.xp >= 150) {
     player.xp -= 150;
     player.level += 1;
   }
-  if (player.level === 5) player.xp = Math.min(player.xp, 150);
+  if (player.level === 6) player.xp = Math.min(player.xp, 150);
   return player;
 }
 
 function renderTiers(players, levelStats) {
-  const counts = [1,2,3,4,5].map((level) => players.filter((player) => Number(player.level) === level).length);
+  const counts = [1,2,3,4,5,6].map((level) => players.filter((player) => Number(player.level) === level).length);
   const max = Math.max(1, ...counts);
   counts.forEach((count,index) => {
     const stats = levelStats.find((item) => Number(item.level) === index + 1) || { total:0, accuracy:0 };
@@ -104,8 +104,8 @@ function renderTiers(players, levelStats) {
 }
 
 function totalXp(player) {
-  const completedLevelXp = [0, 0, 150, 300, 450, 600];
-  const level = Math.min(5, Math.max(1, Number(player.level) || 1));
+  const completedLevelXp = [0, 0, 150, 300, 450, 600, 750];
+  const level = Math.min(6, Math.max(1, Number(player.level) || 1));
   return completedLevelXp[level] + Number(player.xp || 0);
 }
 
@@ -186,17 +186,17 @@ function buildStudentSummaryRows(data) {
   (data.answers || []).forEach((answer) => {
     const key = `${answer.className}:${answer.id}`;
     if (!students.has(key)) students.set(key, { className:answer.className, id:answer.id, name:answer.name, level:1, xp:0, total:0, correct:0, streak:0, mistakes:0 });
-    if (!perLevel.has(key)) perLevel.set(key, [1,2,3,4,5].map(() => ({ total:0, correct:0 })));
-    const level = Math.min(5, Math.max(1, Number(answer.level) || 1));
+    if (!perLevel.has(key)) perLevel.set(key, [1,2,3,4,5,6].map(() => ({ total:0, correct:0 })));
+    const level = Math.min(6, Math.max(1, Number(answer.level) || 1));
     const stats = perLevel.get(key)[level - 1];
     stats.total += 1;
     if (answer.isCorrect) stats.correct += 1;
   });
   const headers = ["班別","學號","姓名","目前 Level","目前 XP","累積 XP","總作答","答對","答錯","正確率","目前連勝","連錯"];
-  [1,2,3,4,5].forEach((level) => headers.push(`L${level} 作答`,`L${level} 答對`,`L${level} 答錯`,`L${level} 正確率`));
+  [1,2,3,4,5,6].forEach((level) => headers.push(`L${level} 作答`,`L${level} 答對`,`L${level} 答錯`,`L${level} 正確率`));
   const rows = [headers];
   [...students.entries()].sort((a,b) => a[1].className.localeCompare(b[1].className) || Number(a[1].id) - Number(b[1].id)).forEach(([key, player]) => {
-    const levels = perLevel.get(key) || [1,2,3,4,5].map(() => ({ total:0, correct:0 }));
+    const levels = perLevel.get(key) || [1,2,3,4,5,6].map(() => ({ total:0, correct:0 }));
     const recordedTotal = levels.reduce((sum, stats) => sum + stats.total, 0);
     const recordedCorrect = levels.reduce((sum, stats) => sum + stats.correct, 0);
     const total = Number(player.total || recordedTotal);

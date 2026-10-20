@@ -10,17 +10,19 @@ const studentDB = {
 };
 
 const levelInfo = {
-  1: { title:"直接代入", rank:"通項學徒", mission:"把 n 代入一次通項", hint:"依照 Tn 的公式，求指定的項。", avatar:"hero-lv1.webp" },
-  2: { title:"負數通項", rank:"符號術士", mission:"處理負號與減法", hint:"代入後先完成乘法，再小心處理負號。", avatar:"hero-lv2.webp" },
-  3: { title:"分數通項", rank:"分式法師", mission:"分子分母同時代入", hint:"代入 n 後約分，答案必須寫成最簡分數。", avatar:"hero-lv3.webp" },
-  4: { title:"圖案通項", rank:"星圖賢者", mission:"用通項計算圖案圓點", hint:"公式已給出，只需代入指定的圖案編號。", avatar:"hero-lv4.webp" },
-  5: { title:"項目判斷", rank:"序列大法師", mission:"判斷指定數值是否存在", hint:"令 Tn 等於目標值；只有 n 是正整數時才存在。", avatar:"hero-lv5.webp" },
+  1: { title:"公式或代數式", rank:"公式觀察者", mission:"分辨公式與代數式", hint:"留意等號及變數之間的關係。", avatar:"hero-lv1.webp" },
+  2: { title:"單變數代入", rank:"代入學徒", mission:"把一個數值代入公式", hint:"負數代入時要保留括號；平方不使用負數。", avatar:"hero-lv2.webp" },
+  3: { title:"雙變數代入", rank:"雙元術士", mission:"把兩個數值代入公式", hint:"先分別代入兩個變數，再完成運算。", avatar:"hero-lv3.webp" },
+  4: { title:"進階代入", rank:"括號法師", mission:"處理負數、括號與分式", hint:"先處理括號和分式，再按運算次序計算。", avatar:"hero-lv4.webp" },
+  5: { title:"生活情境公式", rank:"應用賢者", mission:"用公式解決生活問題", hint:"從題目找出已知數值，再代入公式。", avatar:"hero-lv5.webp" },
+  6: { title:"圖形公式", rank:"幾何大法師", mission:"建立公式再代入", hint:"先選出圖形公式，再計算周界。", avatar:"hero-lv5.webp" },
 };
 
 let progress = defaultProgress();
 let player = null;
 let question;
 let entry = "";
+let selectedChoice = "";
 let locked = false;
 let questionNumber = 0;
 let pendingAnswers = [];
@@ -33,6 +35,7 @@ let studentExportCache = null;
 let protectedAction = "";
 let bossHp = 300000;
 let bossMaxHp = 300000;
+let recentQuestionKeys = Object.fromEntries([1,2,3,4,5,6].map((level) => [level, []]));
 
 const $ = (id) => document.getElementById(id);
 
@@ -42,23 +45,23 @@ function defaultProgress() {
 
 function normalizeLevelProgress(raw) {
   const next = { ...raw };
-  next.level = Math.min(5, Math.max(1, Number(next.level) || 1));
+  next.level = Math.min(6, Math.max(1, Number(next.level) || 1));
   next.xp = Math.max(0, Number(next.xp) || 0);
-  while (next.level < 5 && next.xp >= core.getLevelXp(next.level)) {
+  while (next.level < 6 && next.xp >= core.getLevelXp(next.level)) {
     next.xp -= core.getLevelXp(next.level);
     next.level += 1;
   }
-  if (next.level === 5) next.xp = Math.min(next.xp, core.getLevelXp(5));
+  if (next.level === 6) next.xp = Math.min(next.xp, core.getLevelXp(6));
   return next;
 }
 
 function emptyLevelStats() {
-  return Object.fromEntries([1,2,3,4,5].map((level) => [level, { total:0, correct:0, streak:0 }]));
+  return Object.fromEntries([1,2,3,4,5,6].map((level) => [level, { total:0, correct:0, streak:0 }]));
 }
 
 function normalizeLevelStats(raw) {
   const normalized = emptyLevelStats();
-  [1,2,3,4,5].forEach((level) => {
+  [1,2,3,4,5,6].forEach((level) => {
     const item = Array.isArray(raw)
       ? raw.find((entry) => Number(entry.level) === level) || {}
       : raw?.[level] || {};
@@ -74,7 +77,7 @@ function normalizeLevelStats(raw) {
 function mergeLevelStats(localStats, remoteStats) {
   const local = normalizeLevelStats(localStats);
   const remote = normalizeLevelStats(remoteStats);
-  [1,2,3,4,5].forEach((level) => {
+  [1,2,3,4,5,6].forEach((level) => {
     if (remote[level].total > local[level].total) local[level] = remote[level];
   });
   return local;
@@ -112,7 +115,10 @@ function init() {
   document.querySelector("[data-action='decimal']").addEventListener("click", addDecimalPoint);
   document.querySelector("[data-action='sign']").addEventListener("click", toggleSign);
   $("submit-answer").addEventListener("click", submitAnswer);
-  document.querySelectorAll("[data-boolean]").forEach((button) => button.addEventListener("click", () => submitBoolean(button.dataset.boolean === "true")));
+  $("choice-answer").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-choice]");
+    if (button) selectChoice(button.dataset.choice);
+  });
   document.querySelectorAll("[data-stats-level]").forEach((button) => button.addEventListener("click", () => {
     selectedStatsLevel = button.dataset.statsLevel;
     renderStudentStats();
@@ -152,6 +158,10 @@ function updateStudentPreview() {
   $("student-name-display").textContent = studentDB[className]?.[id] || "請選擇班別與學號";
 }
 
+function questionKey(item) {
+  return [item.level, item.type, item.tex, item.answerFormula || "", item.answerTex || ""].join("|");
+}
+
 function login() {
   const className = $("class-select").value;
   const id = Number($("id-select").value);
@@ -160,6 +170,7 @@ function login() {
   player = { className, id, name };
   studentExportCache = null;
   progress = loadProgress();
+  recentQuestionKeys = Object.fromEntries([1,2,3,4,5,6].map((level) => [level, []]));
   progressDirty = false;
   $("login-status").textContent = "";
   $("player-class").textContent = `${className} ${id} 號`;
@@ -207,20 +218,58 @@ function nextQuestion() {
   Battle.cancel();
   locked = false;
   entry = "";
+  selectedChoice = "";
   questionNumber += 1;
-  question = core.generateQuestion(progress.level);
+  const recent = recentQuestionKeys[progress.level] || [];
+  let candidate = null;
+  let foundNewQuestion = false;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    candidate = core.generateQuestion(progress.level);
+    if (!recent.includes(questionKey(candidate))) {
+      foundNewQuestion = true;
+      break;
+    }
+  }
+  if (!foundNewQuestion) {
+    recent.length = 0;
+    candidate = core.generateQuestion(progress.level);
+  }
+  question = candidate;
+  recent.push(questionKey(question));
+  // Keep a question bag larger than every current level's fixed item pool.
+  // This prevents the same item returning until the available items have
+  // been used first, while still allowing the game to continue indefinitely.
+  if (recent.length > 12) recent.shift();
+  recentQuestionKeys[progress.level] = recent;
   $("question-number").textContent = questionNumber;
   $("question-type").textContent = question.type;
   $("feedback").className = "feedback";
   $("feedback").innerHTML = "";
   setKeypadDisabled(false);
-  $("keypad").classList.toggle("hidden", question.inputKind === "boolean");
-  $("choice-answer").classList.toggle("hidden", question.inputKind !== "boolean");
-  $("answer-display").classList.toggle("hidden", question.inputKind === "boolean");
+  const isChoice = question.inputKind === "choice";
+  const isFormulaNumber = question.inputKind === "formula-number";
+  $("keypad").classList.toggle("hidden", isChoice);
+  $("choice-answer").classList.toggle("hidden", !isChoice && !isFormulaNumber);
+  $("answer-display").classList.toggle("hidden", isChoice);
+  renderChoices(question);
   $("pattern-preview").classList.toggle("hidden", !question.patternCounts);
   renderPatternPreview(question.patternCounts || []);
   renderMath($("question-math"), question.tex);
   renderEntry();
+}
+
+function renderChoices(currentQuestion) {
+  const box = $("choice-answer");
+  if (!currentQuestion.choices) { box.innerHTML = ""; return; }
+  box.innerHTML = currentQuestion.choices.map((choice) => `<button type="button" data-choice="${choice}"><span>${choice}</span></button>`).join("");
+}
+
+function selectChoice(choice) {
+  if (locked) return;
+  selectedChoice = choice;
+  $("choice-answer").querySelectorAll("[data-choice]").forEach((button) => button.classList.toggle("selected", button.dataset.choice === choice));
+  if (question.inputKind === "choice") finalizeAnswer(choice, core.isAnswerCorrect(choice, question.answer));
+  else renderEntry();
 }
 
 function renderPatternPreview(counts) {
@@ -284,7 +333,7 @@ function renderEntry() {
   display.classList.toggle("empty", !tex);
   if (!tex) display.innerHTML = '<span class="answer-placeholder">?</span>';
   else renderMath(display, tex);
-  $("submit-answer").disabled = !core.parseAnswer(entry) || locked;
+  $("submit-answer").disabled = !core.parseAnswer(entry) || locked || (question?.inputKind === "formula-number" && !selectedChoice);
 }
 
 function renderMath(element, tex) {
@@ -295,6 +344,11 @@ function submitAnswer() {
   if (locked) return;
   const answer = core.parseAnswer(entry);
   if (!answer) return;
+  if (question.inputKind === "formula-number") {
+    if (!selectedChoice) return;
+    finalizeAnswer(`${selectedChoice}；${entry}`, selectedChoice === question.answerFormula && core.isAnswerCorrect(entry, question.answer));
+    return;
+  }
   finalizeAnswer(entry, core.isAnswerCorrect(entry, question.answer));
 }
 
@@ -315,11 +369,10 @@ function finalizeAnswer(studentAnswer, correct) {
   progress.levelStats = levelStats;
   progressDirty = true;
   studentExportCache = null;
-  progress.mistakes = correct ? 0 : (Number(progress.mistakes) || 0) + 1;
   if (!correct) {
     progress.mistakeHistory = [...(progress.mistakeHistory || []), {
       timestamp:new Date().toISOString(), level:question.level, question:question.tex,
-      studentAnswer, correctAnswer:typeof question.answer === "boolean" ? (question.answer ? "有" : "沒有") : question.answer.toFraction(),
+      studentAnswer, correctAnswer:serializeAnswer(question.answer),
     }].slice(-300);
   }
   pendingDamage += correct ? 45 : 0;
@@ -328,14 +381,14 @@ function finalizeAnswer(studentAnswer, correct) {
     level: question.level,
     question: question.tex,
     studentAnswer,
-    correctAnswer: typeof question.answer === "boolean" ? (question.answer ? "有" : "沒有") : question.answer.toFraction(),
+    correctAnswer: serializeAnswer(question.answer),
     isCorrect: correct,
   });
   saveProgress();
   scheduleSync();
   setKeypadDisabled(true);
   playBattleAnimation(correct);
-  showFeedback(correct);
+  showFeedback(correct, result);
   updateProgressUI();
 
   if (correct) {
@@ -347,11 +400,19 @@ function finalizeAnswer(studentAnswer, correct) {
   }
 }
 
-function showFeedback(correct) {
+function showFeedback(correct, result) {
   const feedback = $("feedback");
   feedback.className = `feedback show ${correct ? "correct" : "wrong"}`;
-  feedback.innerHTML = `<div class="feedback-summary"><strong>${correct ? "+15 XP　計算正確" : "-10 XP　查看解題步驟"}</strong><span class="answer-reference">正確答案：<span id="correct-answer-math"></span></span></div>`;
-  renderMath($("correct-answer-math"), question.answerTex || core.fractionTex(question.answer));
+  const xpLabel = correct ? "+15 XP　計算正確" : (result.protectedPenalty ? "+0 XP　連錯保護中" : "-10 XP　查看解題步驟");
+  feedback.innerHTML = `<div class="feedback-summary"><strong>${xpLabel}</strong><span class="answer-reference">正確答案：<span id="correct-answer-math"></span></span></div>`;
+  if (typeof question.answer === "string") $("correct-answer-math").textContent = question.answer;
+  else renderMath($("correct-answer-math"), question.answerTex || core.fractionTex(question.answer));
+  if (!correct && result.protectionActive) {
+    const protection = document.createElement("p");
+    protection.className = "protection-message";
+    protection.textContent = "連錯 3 題後啟動保護；之後答錯不再扣 XP，答對 1 題後恢復。";
+    feedback.append(protection);
+  }
   if (correct) return;
 
   const solution = document.createElement("section");
@@ -374,6 +435,12 @@ function showFeedback(correct) {
   nextButton.addEventListener("click", nextQuestion, { once: true });
   solution.append(nextButton);
   feedback.append(solution);
+}
+
+function serializeAnswer(answer) {
+  if (typeof answer === "boolean") return answer ? "有" : "沒有";
+  if (typeof answer === "string") return answer;
+  return answer.toFraction();
 }
 
 function playBattleAnimation(correct) {
@@ -437,8 +504,8 @@ function showLevelDialog(completed) {
   const info = levelInfo[progress.level];
   $("dialog-avatar").src = info.avatar;
   $("dialog-kicker").textContent = completed ? "MASTERED" : "LEVEL UP";
-  $("dialog-title").textContent = completed ? "完成全部關卡" : `進入程度${["一", "二", "三", "四", "五"][progress.level - 1]}`;
-  $("dialog-copy").textContent = completed ? "你已完成 750 XP 的通項公式星術訓練。" : `${info.title}已解鎖。`;
+  $("dialog-title").textContent = completed ? "完成全部關卡" : `進入程度${["一", "二", "三", "四", "五", "六"][progress.level - 1]}`;
+  $("dialog-copy").textContent = completed ? "你已完成 900 XP 的公式和代入法訓練。" : `${info.title}已解鎖。`;
   $("continue-button").textContent = completed ? "繼續練習" : "開始下一關";
   $("level-dialog").showModal();
 }
@@ -497,7 +564,7 @@ function resetProgress() {
 function localStudentExportData() {
   return {
     player: { ...player, ...progress },
-    levelStats: [1,2,3,4,5].map((level) => ({ level, ...normalizeLevelStats(progress.levelStats)[level] })),
+    levelStats: [1,2,3,4,5,6].map((level) => ({ level, ...normalizeLevelStats(progress.levelStats)[level] })),
     wrongAnswers: Array.isArray(progress.mistakeHistory) ? progress.mistakeHistory : [],
   };
 }
@@ -519,8 +586,8 @@ async function getStudentExportData() {
 }
 
 function studentTotalXp(student) {
-  const completedLevelXp = [0, 0, 150, 300, 450, 600];
-  const level = Math.min(5, Math.max(1, Number(student.level) || 1));
+  const completedLevelXp = [0, 0, 150, 300, 450, 600, 750];
+  const level = Math.min(6, Math.max(1, Number(student.level) || 1));
   return completedLevelXp[level] + Number(student.xp || 0);
 }
 
@@ -546,7 +613,7 @@ function downloadStudentOverall() {
     const levels = normalizeLevelStats(data.levelStats);
     const headers = ["班別","學號","姓名","目前 Level","目前 XP","累積 XP","總作答","答對","答錯","正確率","目前連勝","連錯"];
     const row = [student.className,student.id,student.name,student.level,student.xp,studentTotalXp(student),student.total,student.correct,Math.max(0,Number(student.total)-Number(student.correct)),student.total ? `${Math.round(Number(student.correct)/Number(student.total)*100)}%` : "--",student.streak,student.mistakes];
-    [1,2,3,4,5].forEach((level) => {
+    [1,2,3,4,5,6].forEach((level) => {
       const stats = levels[level];
       headers.push(`L${level} 作答`,`L${level} 答對`,`L${level} 答錯`,`L${level} 正確率`);
       row.push(stats.total,stats.correct,Math.max(0,stats.total-stats.correct),stats.total ? `${Math.round(stats.correct/stats.total*100)}%` : "--");
@@ -584,7 +651,7 @@ function renderMistakeViewer(items) {
     body.innerHTML = '<div class="mistake-empty"><strong>全部答對</strong><span>繼續保持目前的節奏。</span></div>';
     return;
   }
-  [1,2,3,4,5].forEach((level) => {
+  [1,2,3,4,5,6].forEach((level) => {
     const levelItems = mistakes.filter((item) => Number(item.level) === level);
     if (!levelItems.length) return;
     const section = document.createElement("section");
