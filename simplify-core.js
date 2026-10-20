@@ -167,7 +167,8 @@
       expression = `${a}${variable}${signed(b)}${variable}`;
     } else if (safeLevel === 2) {
       const a = nonZero(-10, 10); const b = nonZero(-10, 10); const c = number(-20, 20);
-      expression = `${a}${variable}${signed(b)}${secondVariable}${signed(c)}`;
+      const repeated = nonZero(-10, 10);
+      expression = `${a}${variable}${signed(b)}${secondVariable}${signed(repeated)}${variable}${signed(c)}`;
     } else if (safeLevel === 3) {
       const a = nonZero(-10, 10); const b = number(1, 12); const multiplier = number(2, 5);
       const divisor = number(2, 5); const quotientFactor = nonZero(-4, 4); const divisibleTerm = divisor * quotientFactor;
