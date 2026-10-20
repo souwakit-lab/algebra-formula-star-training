@@ -12,7 +12,7 @@
   let level = 1; let questionNumber = 0; let score = 0; let streak = 0; let levelXp = 0; let mistakes = 0; let total = 0; let correctCount = 0; let levelStats = emptyLevelStats(); let mistakeHistory = []; let selectedStatsLevel = "all"; let question; let entry = ""; let locked = true;
   const levels = core.LEVELS;
   const keyLayout = [
-    ["7","8","9","a","b","c"], ["4","5","6","x","y","z"], ["1","2","3","m","n","p"], ["0","＋","−","×","÷","^"], ["(",")","⌫","清除","提交", ""]
+    ["7","8","9","a","b","c"], ["4","5","6","x","y","z"], ["1","2","3","m","n","p"], ["0","＋","−","×","分數","^"], ["(",")","⌫","清除","提交", ""]
   ];
   function emptyLevelStats() { return Object.fromEntries([1,2,3,4,5,6].map((number) => [number, { total:0, correct:0, streak:0 }])); }
   function normalizeLevelStats(raw) {
@@ -65,7 +65,8 @@
       if (/^[a-z]$/.test(key)) key = letters[letterIndex++];
       if (!key) { keypad.append(document.createElement("span")); return; }
       const button = document.createElement("button"); button.type = "button"; button.textContent = key; button.dataset.key = key;
-      if (["＋","−","×","÷","(",")"].includes(key)) button.classList.add("operator");
+      if (key === "分數") { button.classList.add("fraction-key"); button.setAttribute("aria-label", "分數"); button.innerHTML = '<span class="fraction-icon"><b></b><i></i><b></b></span>'; }
+      if (["＋","−","×","分數","(",")"].includes(key)) button.classList.add("operator");
       if (key === "^") button.classList.add("power");
       if (["⌫","清除"].includes(key)) button.classList.add("utility");
       if (key === "提交") { button.classList.add("submit"); button.disabled = true; button.dataset.action = "submit"; }
@@ -84,7 +85,7 @@
     if (key === "⌫") return setEntry(entry.slice(0, -1));
     if (key === "清除") return setEntry("");
     if (key === "提交") return submitAnswer();
-    setEntry(entry + ({"＋":"+","−":"-","×":"*","÷":"/"}[key] || key));
+    setEntry(entry + ({"＋":"+","−":"-","×":"*","分數":"/"}[key] || key));
   }
   function updateMeta() {
     const info = levels[level]; $("level-label").textContent = `LEVEL ${level}`; $("level-title").textContent = info.title;
