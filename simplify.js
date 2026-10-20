@@ -10,7 +10,13 @@
   ];
   function makeKeypad() {
     const keypad = $("keypad");
+    const requiredLetters = `${question.expression} ${question.answer}`.match(/[A-Za-z]/g) || [];
+    const defaultLetters = keyLayout.flat().filter((key) => /^[a-z]$/.test(key));
+    const letters = [...new Set([...requiredLetters, ...defaultLetters])];
+    let letterIndex = 0;
+    keypad.textContent = "";
     keyLayout.flat().forEach((key) => {
+      if (/^[a-z]$/.test(key)) key = letters[letterIndex++];
       if (!key) { keypad.append(document.createElement("span")); return; }
       const button = document.createElement("button"); button.type = "button"; button.textContent = key; button.dataset.key = key;
       if (["＋","−","×","÷","(",")"].includes(key)) button.classList.add("operator");
@@ -42,7 +48,7 @@
     $("map").innerHTML = Object.entries(levels).map(([number, info]) => `<li class="${Number(number) < level ? "done" : Number(number) === level ? "active" : ""}"><b>0${number}</b><div><strong>${info.title}</strong><small>${info.mission}</small></div></li>`).join("");
   }
   function nextQuestion() {
-    questionNumber += 1; question = core.generateQuestion(level); entry = ""; locked = false; updateMeta(); updateAnswer(); renderMath($("question"), question.expression);
+    questionNumber += 1; question = core.generateQuestion(level); entry = ""; locked = false; makeKeypad(); updateMeta(); updateAnswer(); renderMath($("question"), question.expression);
     $("question-number").textContent = questionNumber; const feedback = $("feedback"); feedback.className = "feedback"; feedback.textContent = "";
   }
   function submitAnswer() {
@@ -68,7 +74,6 @@
     if (/^[0-9a-zA-Z()+\-*/^]$/.test(event.key)) { event.preventDefault(); handleKey(event.key.toLowerCase()); }
     else if (event.key === "Enter") submitAnswer(); else if (event.key === "Backspace") handleKey("⌫");
   });
-  makeKeypad();
   if (typeof Battle !== "undefined") Battle.init();
   updateMeta(); nextQuestion();
 })();
