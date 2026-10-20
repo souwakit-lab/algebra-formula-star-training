@@ -15,52 +15,63 @@
   }
   function numericQuestion(level, type, tex, answer, steps, extra = {}) { const value = answer instanceof FractionClass ? answer : new FractionClass(answer); return { level, type, tex, answer:value, answerTex:fractionTex(value), steps, inputKind:"number", ...extra }; }
   function choiceQuestion(level, type, tex, choices, answer, steps) { return { level, type, tex, choices, answer, answerTex:answer, steps, inputKind:"choice" }; }
-  function generateLevel1() {
-    const items = [["3x+2", "代數式", "3x+2"],["P=2(a+b)", "公式", "P=2(a+b)"],["x²/3+1", "代數式", "\\frac{x²}{3}+1"],["A=lw", "公式", "A=lw"]];
-    const [display, answer, displayTex] = items[Math.floor(Math.random() * items.length)];
+  function generateLevel1(rng) {
+    const a = randomInt(2, 9, rng), b = randomInt(1, 20, rng), d = randomInt(2, 5, rng);
+    const items = [[`${a}x+${b}`, "代數式", `${a}x+${b}`],[`y=${a}x+${b}`, "公式", `y=${a}x+${b}`],[`x²/${d}+${b}`, "代數式", `\\frac{x²}{${d}}+${b}`],["A=lw", "公式", "A=lw"]];
+    const [display, answer, displayTex] = items[randomInt(0, items.length - 1, rng)];
     const choices = ["代數式", "公式"];
     return choiceQuestion(1, "公式或代數式", `判斷：　${displayTex}　是代數式還是公式？`, choices, answer, ["公式必須有等號，並表示兩個或以上變數之間的關係。", `所以 ${display} 是${answer}。`, `答案：${answer}`]);
   }
   function generateLevel2(rng) {
+    const k = randomInt(2, 5, rng), b = randomInt(1, 20, rng), x = randomInt(0, 5, rng);
+    const c = randomInt(1, 10, rng), d = randomInt(2, 5, rng), a = d * randomInt(1, Math.floor(20 / d), rng);
     const items = [
-      { formula:"A=4b", valueTex:"b=6", answer:24, steps:["把 b=6 代入 A=4b。","A=4(6)","A=24"] },
-      { formula:"A=4b", valueTex:"b=-6", answer:-24, steps:["把 b=-6 代入 A=4b，保留負號。","A=4(-6)","A=-24"] },
-      { formula:"P=x²+3", valueTex:"x=4", answer:19, steps:["把 x=4 代入 P=x²+3。","P=4²+3","P=19"] },
-      { formula:"q=\\frac{a}{2}+5", valueTex:"a=8", answer:9, steps:["把 a=8 代入 q=a/2+5。","q=\\frac{8}{2}+5","q=9"] },
+      { formula:`A=${k}b`, valueTex:`b=${b}`, answer:k*b, steps:[`把 b=${b} 代入 A=${k}b。`,`A=${k}(${b})`,`A=${k*b}`] },
+      { formula:`A=${k}b`, valueTex:`b=-${b}`, answer:-k*b, steps:[`把 b=-${b} 代入 A=${k}b，保留負號。`,`A=${k}(-${b})`,`A=${-k*b}`] },
+      { formula:`P=x²+${c}`, valueTex:`x=${x}`, answer:x*x+c, steps:[`把 x=${x} 代入 P=x²+${c}。`,`P=${x}²+${c}`,`P=${x*x+c}`] },
+      { formula:`q=\\frac{a}{${d}}+${c}`, valueTex:`a=${a}`, answer:a/d+c, steps:[`把 a=${a} 代入公式。`,`q=\\frac{${a}}{${d}}+${c}`,`q=${a/d+c}`] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
     const target = item.formula.split("=")[0];
     return numericQuestion(2, "單變數代入", `${item.formula}　${item.valueTex}　求 ${target}`, item.answer, item.steps);
   }
   function generateLevel3(rng) {
+    const k = randomInt(2, 5, rng), j = randomInt(2, 5, rng), a = randomInt(1, 10, rng), b = randomInt(1, 10, rng);
     const items = [
-      { formula:"s=2u+3v", values:"u=4，v=5", answer:23, steps:["把 u=4、v=5 代入 s=2u+3v。","s=2(4)+3(5)","s=23"] },
-      { formula:"T=5a-2b", values:"a=3，b=2", answer:11, steps:["把 a=3、b=2 代入 T=5a-2b。","T=5(3)-2(2)","T=11"] },
-      { formula:"F=3m+n", values:"m=6，n=4", answer:22, steps:["把 m=6、n=4 代入 F=3m+n。","F=3(6)+4","F=22"] },
+      { formula:`s=${k}u+${j}v`, values:`u=${a}，v=${b}`, answer:k*a+j*b, steps:[`把 u=${a}、v=${b} 代入公式。`,`s=${k}(${a})+${j}(${b})`,`s=${k*a+j*b}`] },
+      { formula:`T=${k}a-${j}b`, values:`a=${a}，b=${b}`, answer:k*a-j*b, steps:[`把 a=${a}、b=${b} 代入公式。`,`T=${k}(${a})-${j}(${b})`,`T=${k*a-j*b}`] },
+      { formula:`F=${k}m+n`, values:`m=${a}，n=${b}`, answer:k*a+b, steps:[`把 m=${a}、n=${b} 代入公式。`,`F=${k}(${a})+${b}`,`F=${k*a+b}`] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
     const target = item.formula.split("=")[0];
     return numericQuestion(3, "雙變數代入", `${item.formula}　${item.values}　求 ${target}`, item.answer, item.steps);
   }
   function generateLevel4(rng) {
+    const d = randomInt(2, 5, rng), k = randomInt(2, 5, rng), c = randomInt(1, 10, rng);
+    const u = -randomInt(1, 20, rng), v = -randomInt(1, 20, rng);
+    const a = d * randomInt(1, Math.floor(20/d), rng), b = -randomInt(1, 10, rng);
+    const x = -randomInt(1, 10, rng), y = randomInt(1, 10, rng), p = -randomInt(1, 20, rng), q = randomInt(1, 20, rng);
+    const difference = new FractionClass(u-v).div(d), sum = new FractionClass(p+q).div(d);
     const items = [
-      { formula:"f=\\frac{u-v}{2}", values:"u=-3，v=-9", answer:3, steps:["把 u=-3、v=-9 代入，保留括號。","f=\\frac{-3-(-9)}{2}","f=3"] },
-      { formula:"T=\\frac{a}{2}+3b", values:"a=8，b=-2", answer:-2, steps:["把 a=8、b=-2 代入 T=a/2+3b。","T=\\frac{8}{2}+3(-2)","T=-2"] },
-      { formula:"q=2(x+y)-1", values:"x=-2，y=5", answer:5, steps:["先把 x=-2、y=5 代入括號。","q=2(-2+5)-1","q=5"] },
-      { formula:"R=\\frac{p+q}{3}", values:"p=-6，q=9", answer:1, steps:["把 p=-6、q=9 代入分子。","R=\\frac{-6+9}{3}","R=1"] },
+      { formula:`f=\\frac{u-v}{${d}}`, values:`u=${u}，v=${v}`, answer:difference, steps:[`把 u=${u}、v=${v} 代入，保留括號。`,`f=\\frac{${u}-(${v})}{${d}}`,`f=${fractionTex(difference)}`] },
+      { formula:`T=\\frac{a}{${d}}+${k}b`, values:`a=${a}，b=${b}`, answer:a/d+k*b, steps:[`把 a=${a}、b=${b} 代入公式。`,`T=\\frac{${a}}{${d}}+${k}(${b})`,`T=${a/d+k*b}`] },
+      { formula:`q=${k}(x+y)-${c}`, values:`x=${x}，y=${y}`, answer:k*(x+y)-c, steps:[`先把 x=${x}、y=${y} 代入括號。`,`q=${k}(${x}+${y})-${c}`,`q=${k*(x+y)-c}`] },
+      { formula:`R=\\frac{p+q}{${d}}`, values:`p=${p}，q=${q}`, answer:sum, steps:[`把 p=${p}、q=${q} 代入分子。`,`R=\\frac{${p}+${q}}{${d}}`,`R=${fractionTex(sum)}`] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
     const target = item.formula.split("=")[0];
     return numericQuestion(4, "進階代入", `${item.formula}　${item.values}　求 ${target}`, item.answer, item.steps);
   }
   function generateLevel5(rng) {
+    const k = randomInt(2, 5, rng), cost = randomInt(5, 20, rng), n = randomInt(1, 20, rng), base = randomInt(6, 12, rng), m = randomInt(1, 10, rng);
     const items = [
-      { text:"售賣 n 個禮盒的利潤 P 可用公式 P=80n-1500 計算。求售出 42 個禮盒的利潤。", formula:"P=80n-1500", values:"n=42", answer:1860, unit:"$", steps:["把 n=42 代入 P=80n-1500。","P=80(42)-1500","P=1860"] },
-      { text:"電視機售貨員的月薪 S 可用公式 S=6500+350m 計算。若售出 40 部，求月薪。", formula:"S=6500+350m", values:"m=40", answer:20500, unit:"$", steps:["把 m=40 代入 S=6500+350m。","S=6500+350(40)","S=20500"] },
+      { text:`售賣 n 個禮盒的利潤 P（元）可用公式 P=${k}n-${cost} 計算。求售出 ${n} 個禮盒的利潤（元）。`, formula:`P=${k}n-${cost}`, values:`n=${n}`, answer:k*n-cost, unit:"元", steps:[`把 n=${n} 代入公式。`,`P=${k}(${n})-${cost}`,`P=${k*n-cost}`] },
+      { text:`電視機售貨員的月薪 S（千元）可用公式 S=${base}+${k}m 計算。若售出 ${m} 部，求月薪（千元）。`, formula:`S=${base}+${k}m`, values:`m=${m}`, answer:base+k*m, unit:"千元", steps:[`把 m=${m} 代入公式，金額以千元為單位。`,`S=${base}+${k}(${m})`,`S=${base+k*m}`] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
     return numericQuestion(5, "生活情境公式", `${item.text}　${item.formula}　${item.values}`, item.answer, item.steps, { unit:item.unit });
   }
   function generateLevel6(rng) {
+    const a = randomInt(2, 20, rng), b = randomInt(1, a, rng), side = randomInt(1, 20, rng);
     const items = [
-      { text:"長方形的長為 a cm、闊為 b cm。若 a=6、b=8，求周界 P。", choices:["P=a+b","P=2(a+b)","P=ab"], answerFormula:"P=2(a+b)", answer:28, steps:["長方形有兩條長和兩條闊。","選擇 P=2(a+b)，再代入 a=6、b=8。","P=2(6+8)=28 cm"], unit:"cm" },
-      { text:"菱形每邊長為 b cm。若 b=4，求周界 P。", choices:["P=2b","P=3b","P=4b"], answerFormula:"P=4b", answer:16, steps:["菱形有四條相等的邊。","選擇 P=4b，再代入 b=4。","P=4(4)=16 cm"], unit:"cm" },
+      { text:`長方形的長為 a cm、闊為 b cm。若 a=${a}、b=${b}，求周界 P。`, choices:["P=a+b","P=2(a+b)","P=ab"], answerFormula:"P=2(a+b)", answer:2*(a+b), steps:["長方形有兩條長和兩條闊。",`選擇 P=2(a+b)，再代入 a=${a}、b=${b}。`,`P=2(${a}+${b})=${2*(a+b)} cm`], unit:"cm" },
+      { text:`菱形每邊長為 b cm。若 b=${side}，求周界 P。`, choices:["P=2b","P=3b","P=4b"], answerFormula:"P=4b", answer:4*side, steps:["菱形有四條相等的邊。",`選擇 P=4b，再代入 b=${side}。`,`P=4(${side})=${4*side} cm`], unit:"cm" },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
     return { level:6, type:"圖形公式", tex:item.text, choices:item.choices, answerFormula:item.answerFormula, answer:new FractionClass(item.answer), answerTex:`${item.answer} ${item.unit}`, steps:item.steps, inputKind:"formula-number", unit:item.unit };
   }
