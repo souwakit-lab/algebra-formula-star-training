@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>化簡代數式星術訓練</title>
+  <link rel="stylesheet" href="simplify.css?v=20261020a">
+  <script defer src="math-renderer.js?v=20261020f"></script>
+  <script defer src="simplify-core.js?v=20261020a"></script>
+  <script defer src="simplify.js?v=20261020a"></script>
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">S</span><div><small>ALGEBRA SIMPLIFY ACADEMY</small><h1>化簡代數式星術訓練</h1></div></div>
+      <div class="scoreboard"><span>總分</span><strong id="score">0</strong><span>連勝 <b id="streak">0</b></span></div>
+    </header>
+    <section class="level-strip">
+      <div><span id="level-label">LEVEL 1</span><strong id="level-title">合併同類項</strong></div>
+      <div class="xp"><span id="progress-copy">0 / 5 題</span><div><i id="progress-bar"></i></div></div>
+      <div class="level-dots" aria-label="六個關卡"><b class="active">1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b></div>
+    </section>
+    <section class="layout">
+      <aside class="side-card character-card"><div class="orb">✦</div><span class="eyebrow">CURRENT MISSION</span><h2 id="mission-title">認出相同的未知數及指數</h2><p id="mission-hint">只合併同類項，常數項要保留。</p><div class="rules"><span>答對 <b>+15</b></span><span>答錯 <b>−10</b></span></div></aside>
+      <section class="practice-card">
+        <div class="question-meta"><span id="question-type">合併同類項</span><span>第 <b id="question-number">1</b> 題</span></div>
+        <div class="instruction">化簡下列代數式</div>
+        <div id="question" class="math-display" aria-label="題目"></div>
+        <div class="equals">=</div>
+        <div id="answer" class="answer-display empty"><span>請輸入答案</span></div>
+        <div id="feedback" class="feedback" aria-live="assertive"></div>
+        <div id="keypad" class="keypad" aria-label="代數式鍵盤"></div>
+      </section>
+      <aside class="side-card map-card"><span class="eyebrow">TRAINING MAP</span><h2>六階段挑戰</h2><ol id="map"></ol><p class="target">完成六關，成為化簡術大師</p></aside>
+    </section>
+  </main>
+</body>
+</html>
