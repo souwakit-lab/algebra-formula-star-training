@@ -158,7 +158,7 @@
     const safeLevel = Math.min(6, Math.max(1, Number(level) || 1));
     const number = (min, max) => min + rand(rng, max - min + 1);
     const nonZero = (min = -10, max = 10) => { let value = 0; while (!value) value = number(min, max); return value; };
-    const variable = ["a", "b", "m", "n", "p", "q", "x", "y", "z"][rand(rng, 9)];
+    const variable = ["a", "b", "m", "n", "p", "c", "x", "y", "z"][rand(rng, 9)];
     const secondVariable = variable === "x" ? "y" : "x";
     const signed = (value) => value >= 0 ? `＋${value}` : `${value}`;
     let expression;
@@ -179,13 +179,13 @@
     } else if (safeLevel === 5) {
       const a = nonZero(-10, 10); const divisor = number(2, 5); const quotientFactor = nonZero(-4, 4); const divided = divisor * quotientFactor;
       if (rand(rng, 3) === 0) expression = `${a}${variable}−${Math.abs(divided)}${variable}÷${divisor}`;
-      else if (rand(rng, 2)) expression = `${a}${variable}＋${divided}${variable}÷${divisor}×${number(2, 4)}`;
+      else if (rand(rng, 2)) expression = `${a}${variable}${signed(divided)}${variable}÷${divisor}×${number(2, 4)}`;
       else expression = `${a}${variable}−${number(1, 10)}${variable}−${number(1, 10)}${secondVariable}`;
     } else {
       const a = nonZero(-10, 10); const b = nonZero(-10, 10); const c = nonZero(-10, 10); const divisor = number(2, 5);
-      if (rand(rng, 3) === 0) expression = `${a}${variable}×${variable}＋${b}${variable}^2−${c}${variable}^2`;
-      else if (rand(rng, 2)) expression = `${a}${variable}^2÷${divisor}＋${b}${variable}^2−${c}${variable}^2`;
-      else expression = `${a}${variable}×${number(2, 4)}＋${b}${secondVariable}${signed(-c)}${variable}＋${number(-10, 10)}`;
+      if (rand(rng, 3) === 0) expression = `${a}${variable}×${variable}${signed(b)}${variable}^2${signed(-c)}${variable}^2`;
+      else if (rand(rng, 2)) expression = `${a}${variable}^2÷${divisor}${signed(b)}${variable}^2${signed(-c)}${variable}^2`;
+      else expression = `${a}${variable}×${number(2, 4)}${signed(b)}${secondVariable}${signed(-c)}${variable}${signed(number(-10, 10))}`;
     }
     return question(safeLevel, expression, expression, LEVELS[safeLevel].hint);
   }
