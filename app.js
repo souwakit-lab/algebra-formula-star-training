@@ -125,7 +125,8 @@ function init() {
   $("confirm-reset").addEventListener("click", resetProgress);
   $("password-form").addEventListener("submit", verifyProtectedAction);
   $("download-student-overall").addEventListener("click", downloadStudentOverall);
-  $("download-student-mistakes").addEventListener("click", downloadStudentMistakes);
+  $("download-student-mistakes").addEventListener("click", openMistakeViewer);
+  $("close-mistake-dialog").addEventListener("click", () => $("mistake-dialog").close());
   document.addEventListener("keydown", handlePhysicalKeyboard);
   if (window.lucide) lucide.createIcons();
   else $("lucide-script")?.addEventListener("load", () => lucide.createIcons(), { once: true });
@@ -554,13 +555,68 @@ function downloadStudentOverall() {
   });
 }
 
-function downloadStudentMistakes() {
-  return withStudentDownload("download-student-mistakes", async () => {
+async function openMistakeViewer() {
+  const dialog = $("mistake-dialog");
+  const body = $("mistake-dialog-body");
+  const button = $("download-student-mistakes");
+  body.innerHTML = '<div class="mistake-loading">整理錯題中...</div>';
+  $("mistake-dialog-summary").textContent = "讀取學習紀錄";
+  dialog.showModal();
+  button.disabled = true;
+  try {
     const data = await getStudentExportData();
-    const mistakes = data.wrongAnswers || [];
-    const rows = [["時間","班別","學號","姓名","Level","題目","學生答案","正確答案"]];
-    mistakes.forEach((item) => rows.push([item.timestamp,player.className,player.id,player.name,item.level,item.question,item.studentAnswer,item.correctAnswer]));
-    downloadStudentCsv(`通項公式_錯題數據_${fileStamp()}_${player.className}_${player.id}號.csv`, rows);
+    renderMistakeViewer(data.wrongAnswers || []);
+  } catch (error) {
+    console.error(error);
+    $("mistake-dialog-summary").textContent = "暫時無法讀取錯題";
+    body.innerHTML = '<div class="mistake-empty">請稍後再試</div>';
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderMistakeViewer(items) {
+  const body = $("mistake-dialog-body");
+  const mistakes = [...items].sort((a, b) => String(b.timestamp || "").localeCompare(String(a.timestamp || "")));
+  $("mistake-dialog-summary").textContent = mistakes.length ? `共 ${mistakes.length} 題 · 按 Level 分類` : "目前沒有錯題";
+  body.innerHTML = "";
+  if (!mistakes.length) {
+    body.innerHTML = '<div class="mistake-empty"><strong>全部答對</strong><span>繼續保持目前的節奏。</span></div>';
+    return;
+  }
+  [1,2,3,4,5].forEach((level) => {
+    const levelItems = mistakes.filter((item) => Number(item.level) === level);
+    if (!levelItems.length) return;
+    const section = document.createElement("section");
+    section.className = "mistake-level-section";
+    section.innerHTML = `<header><span>LEVEL ${level}</span><strong>${levelInfo[level].title}</strong><b>${levelItems.length} 題</b></header>`;
+    levelItems.forEach((item, index) => {
+      const card = document.createElement("article");
+      card.className = "mistake-card";
+      const heading = document.createElement("div");
+      heading.className = "mistake-card-heading";
+      const date = item.timestamp ? new Date(item.timestamp).toLocaleDateString("zh-Hant", { month:"numeric", day:"numeric" }) : "--";
+      heading.innerHTML = `<span>錯題 ${index + 1}</span><time>${date}</time>`;
+      const questionNode = document.createElement("div");
+      questionNode.className = "mistake-question";
+      renderMath(questionNode, item.question || "--");
+      const answers = document.createElement("div");
+      answers.className = "mistake-answers";
+      const studentAnswer = document.createElement("div");
+      studentAnswer.innerHTML = "<span>你的答案</span>";
+      const studentMath = document.createElement("strong");
+      renderMath(studentMath, String(item.studentAnswer ?? "--"));
+      studentAnswer.append(studentMath);
+      const correctAnswer = document.createElement("div");
+      correctAnswer.innerHTML = "<span>正確答案</span>";
+      const correctMath = document.createElement("strong");
+      renderMath(correctMath, String(item.correctAnswer ?? "--"));
+      correctAnswer.append(correctMath);
+      answers.append(studentAnswer, correctAnswer);
+      card.append(heading, questionNode, answers);
+      section.append(card);
+    });
+    body.append(section);
   });
 }
 

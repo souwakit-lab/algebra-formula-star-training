@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
   <title>通項公式星術訓練</title>
-  <link rel="stylesheet" href="styles.css?v=20261020e">
+  <link rel="stylesheet" href="styles.css?v=20261020f">
   <link rel="stylesheet" href="battle-ui.css?v=20261020c">
   <script async id="lucide-script" src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script defer src="vendor/fraction.min.js"></script>
   <script defer src="math-renderer.js?v=20261020b"></script>
   <script defer src="game-core.js?v=20261020c"></script>
   <script defer src="config.js"></script>
-  <script defer src="battle.js?v=20261020c"></script>
-  <script defer src="app.js?v=20261020d"></script>
+  <script defer src="battle.js?v=20261020d"></script>
+  <script defer src="app.js?v=20261020e"></script>
 </head>
 <body>
   <section id="login-screen" class="login-screen">
@@ -65,7 +65,7 @@
     </nav>
     <div class="student-downloads" aria-label="下載個人學習數據">
       <button id="download-student-overall" type="button"><i data-lucide="file-down"></i><span>總體數據</span></button>
-      <button id="download-student-mistakes" type="button"><i data-lucide="list-x"></i><span>錯題數據</span></button>
+      <button id="download-student-mistakes" type="button"><i data-lucide="list-x"></i><span>檢視錯題</span></button>
       <span id="student-download-status" role="status" aria-live="polite"></span>
     </div>
 
@@ -219,6 +219,18 @@
       <button type="button" onclick="this.closest('dialog').close()">取消</button>
       <button id="confirm-reset" class="danger" type="button">重設</button>
     </div>
+  </dialog>
+
+  <dialog id="mistake-dialog" class="mistake-dialog">
+    <header>
+      <div>
+        <span>ERROR REVIEW</span>
+        <h2>我的錯題紀錄</h2>
+        <p id="mistake-dialog-summary">整理錯題中...</p>
+      </div>
+      <button id="close-mistake-dialog" type="button" title="關閉" aria-label="關閉錯題紀錄"><i data-lucide="x"></i></button>
+    </header>
+    <div id="mistake-dialog-body" class="mistake-dialog-body" aria-live="polite"></div>
   </dialog>
 </body>
 </html>

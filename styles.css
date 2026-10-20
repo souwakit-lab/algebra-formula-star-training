@@ -216,6 +216,36 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
 .password-field input { width:100%; min-height:44px; padding:8px 11px; border:1px solid var(--line); border-radius:4px; color:var(--text); background:#0c1422; font:600 17px "Space Grotesk",sans-serif; }
 .password-field input:focus { outline:2px solid var(--sky); outline-offset:1px; }
 .password-dialog .password-error { min-height:20px; color:var(--coral); font-weight:700; }
+.mistake-dialog { width:min(900px,calc(100% - 32px)); max-height:min(82vh,820px); padding:0; overflow:hidden; border-color:rgba(82,183,232,.55); background:rgba(16,24,39,.8); backdrop-filter:blur(16px); }
+.mistake-dialog::backdrop { background:rgba(5,9,16,.72); backdrop-filter:blur(5px); }
+.mistake-dialog > header { position:sticky; top:0; z-index:2; display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:20px 22px 17px; border-bottom:1px solid var(--line); background:rgba(16,24,39,.92); }
+.mistake-dialog > header span { color:var(--sky); font:800 10px/1.2 "Space Grotesk",sans-serif; }
+.mistake-dialog > header h2 { margin:4px 0 2px; font-size:24px; }
+.mistake-dialog > header p { margin:0; color:var(--muted); font-size:12px; }
+.mistake-dialog > header button { display:grid; place-items:center; flex:0 0 40px; width:40px; height:40px; padding:0; border:1px solid var(--line); border-radius:4px; color:var(--text); background:rgba(32,44,66,.8); cursor:pointer; }
+.mistake-dialog > header button:hover { border-color:var(--sky); color:var(--sky); }
+.mistake-dialog > header button svg { width:20px; }
+.mistake-dialog-body { max-height:calc(82vh - 100px); padding:18px 22px 24px; overflow:auto; }
+.mistake-loading,.mistake-empty { display:grid; place-items:center; align-content:center; gap:5px; min-height:260px; color:var(--muted); text-align:center; }
+.mistake-empty strong { color:var(--mint); font-size:23px; }
+.mistake-empty span { font-size:13px; }
+.mistake-level-section { margin:0 0 22px; }
+.mistake-level-section:last-child { margin-bottom:0; }
+.mistake-level-section > header { display:grid; grid-template-columns:auto 1fr auto; align-items:baseline; gap:10px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+.mistake-level-section > header span { color:var(--sky); font:800 10px "Space Grotesk",sans-serif; }
+.mistake-level-section > header strong { font-size:16px; }
+.mistake-level-section > header b { color:var(--muted); font-size:11px; }
+.mistake-card { display:grid; grid-template-columns:90px minmax(0,1fr) minmax(220px,.7fr); align-items:center; gap:14px; min-height:92px; margin-top:8px; padding:12px 14px; border:1px solid rgba(51,66,92,.9); border-left:3px solid var(--coral); border-radius:5px; background:rgba(24,34,53,.72); }
+.mistake-card-heading span,.mistake-card-heading time { display:block; }
+.mistake-card-heading span { color:var(--coral); font-size:12px; font-weight:800; }
+.mistake-card-heading time { margin-top:5px; color:var(--muted); font-size:11px; }
+.mistake-question { min-width:0; color:var(--text); font-size:clamp(17px,2.2vw,24px); }
+.mistake-answers { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.mistake-answers > div { min-width:0; padding:8px 10px; border-left:1px solid var(--line); }
+.mistake-answers span,.mistake-answers strong { display:block; }
+.mistake-answers span { color:var(--muted); font-size:9px; }
+.mistake-answers strong { margin-top:3px; color:var(--coral); font-size:18px; }
+.mistake-answers > div:last-child strong { color:var(--mint); }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 220px minmax(390px, 1fr); }
@@ -256,6 +286,8 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
   .student-stats strong { font-size: 16px; }
   .stats-level-filter { justify-content:space-between; }
   .student-downloads { justify-content:flex-start; flex-wrap:wrap; }
+  .mistake-card { grid-template-columns:72px 1fr; }
+  .mistake-answers { grid-column:1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -286,6 +318,13 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
   .student-downloads button { flex:1; justify-content:center; }
   .student-downloads > span { width:100%; min-width:0; }
   .keypad { grid-template-columns: repeat(4, minmax(48px, 1fr)); grid-template-rows: repeat(4, 54px); gap: 7px; }
+  .mistake-dialog { width:calc(100% - 18px); max-height:88vh; }
+  .mistake-dialog > header { padding:16px; }
+  .mistake-dialog-body { max-height:calc(88vh - 92px); padding:14px; }
+  .mistake-card { grid-template-columns:1fr; gap:9px; }
+  .mistake-card-heading { display:flex; justify-content:space-between; }
+  .mistake-card-heading time { margin-top:0; }
+  .mistake-answers { grid-column:auto; }
 }
 
 /* General-term game additions. */

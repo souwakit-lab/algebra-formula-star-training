@@ -205,6 +205,26 @@ const Battle = (() => {
     ctx.restore();
   }
 
+  function ember(x, y, size, color, alpha=1, rotation=0) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#fff1ad";
+    ctx.lineWidth = Math.max(1, size * .1);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = size * 1.8;
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 1.35);
+    ctx.quadraticCurveTo(size * .72, -size * .12, size * .35, size * .72);
+    ctx.quadraticCurveTo(0, size * 1.1, -size * .35, size * .72);
+    ctx.quadraticCurveTo(-size * .72, -size * .12, 0, -size * 1.35);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function rune(x, y, size, color, alpha=1, rotation=0) {
     ctx.save();
     ctx.translate(x, y);
@@ -529,7 +549,7 @@ const Battle = (() => {
     const dragon = document.getElementById("dragon-avatar");
     if (!hero || !dragon || !ctx) return;
     prepareCanvas();
-    const source = pointFor(dragon, .28, .48);
+    const source = pointFor(dragon, .35, .44);
     const target = pointFor(hero, .6, .42);
     const duration = matchMedia("(prefers-reduced-motion: reduce)").matches ? 450 : 2600;
     layer.classList.add("is-active", "enemy-active");
@@ -546,28 +566,44 @@ const Battle = (() => {
       const x = source.x + (target.x - source.x) * travel;
       const y = source.y + (target.y - source.y) * travel;
       ctx.clearRect(0, 0, innerWidth, innerHeight);
-      glow(source.x, source.y, 45, art.color, .65);
+      glow(source.x, source.y, 48, "#ff9b3f", .62);
       if (progress < .32) {
-        glow(source.x - 18, source.y, 34, "#fff0a0", .85);
-        for (let index = 0; index < 7; index += 1) rock(source.x + (index - 3) * 9, source.y + Math.sin(index + progress * 8) * 7, 7 + index % 3 * 2, "#ffca57", .8, progress * 4 + index, index);
+        const charge = Math.sin(clamp(progress / .32) * Math.PI);
+        glow(source.x - 12, source.y, 38 + charge * 18, "#fff1a6", .72 + charge * .2);
+        for (let index = 0; index < 3; index += 1) ring(source.x, source.y, 15 + index * 12 + charge * 8, index % 2 ? "#ff6b32" : "#ffd45f", charge * .72, progress * 7 + index);
+        for (let index = 0; index < 12; index += 1) {
+          const angle = index * 2.399 + progress * 12;
+          const radius = (16 + index % 4 * 7) * (1 - charge * .45);
+          ember(source.x + Math.cos(angle) * radius, source.y + Math.sin(angle) * radius * .6, 3 + index % 3, index % 2 ? "#ff6938" : "#ffd45f", charge * .82, angle);
+        }
       }
       if (progress > .12 && progress < .78) {
-        flameCone(source.x - 18, source.y, x, y, 22 + travel * 34, art.color, fade * .74, progress * 8);
-        flameCone(source.x - 24, source.y + 3, x + 12, y + 8, 10 + travel * 20, "#ffd15a", fade * .82, progress * 11 + 1.4);
-        for (let index = 0; index < 36; index += 1) {
-          const q = (index / 36 + progress * 1.4) % 1;
-          const px = source.x + (target.x - source.x) * q;
-          const py = source.y + (target.y - source.y) * q + Math.sin(q * 12 + progress * 9 + index) * (.35 + q) * 28;
-          rock(px, py, 4 + q * 7, art.color, fade * (.3 + .55 * (1 - q)), Math.sin(index + progress * 4), index);
+        flameCone(source.x - 8, source.y, x, y, 26 + travel * 42, "#e8422e", fade * .68, progress * 7);
+        flameCone(source.x - 12, source.y + 2, x + 10, y + 4, 17 + travel * 28, "#ff8a32", fade * .82, progress * 10 + 1.2);
+        flameCone(source.x - 16, source.y, x + 18, y, 7 + travel * 12, "#ffe47a", fade * .94, progress * 13 + 2.1);
+        arcTrail(source.x - 8, source.y, x + 12, y, -12 - travel * 16, "#fff4c4", 3 + travel * 3, fade * .9);
+        for (let index = 0; index < 32; index += 1) {
+          const q = (index / 32 + progress * .9) % 1;
+          const px = source.x + (x - source.x) * q;
+          const py = source.y + (y - source.y) * q + Math.sin(q * 15 + progress * 13 + index) * (5 + q * 24);
+          const size = 3 + q * 6 + index % 3;
+          ember(px, py, size, index % 3 ? "#ff7438" : "#ffd65a", fade * (.28 + .62 * (1 - q)), Math.atan2(y - source.y, x - source.x) + q);
+          if (index % 4 === 0) glow(px, py, size * 2.4, "#ff9b42", fade * .38);
         }
       }
       if (progress > .55) {
         const age = clamp((progress - .55) / .35);
-        glow(target.x, target.y, 70 + age * 80, art.color, (1 - age) * .5);
-        for (let index = 0; index < 38; index += 1) {
-          const angle = index * 2.4;
-          const radius = (8 + index % 11 * 7) * age;
-          rock(target.x + Math.cos(angle) * radius, target.y + Math.sin(angle) * radius * .6, 4 + index % 3, art.color, 1 - age, angle, index);
+        const impactFade = 1 - age;
+        glow(target.x, target.y, 72 + age * 105, "#ff5b32", impactFade * .58);
+        glow(target.x, target.y, 34 + age * 38, "#ffe889", impactFade * .72);
+        for (let index = 0; index < 4; index += 1) ring(target.x, target.y, 22 + age * (62 + index * 18), index % 2 ? "#ff6938" : "#ffd96a", impactFade * (1 - index * .14), age * 3 + index);
+        for (let index = 0; index < 34; index += 1) {
+          const angle = index * 2.399 + age * 2;
+          const radius = (12 + index % 9 * 9) * age;
+          const px = target.x + Math.cos(angle) * radius;
+          const py = target.y + Math.sin(angle) * radius * .62;
+          ember(px, py, 3 + index % 4, index % 3 ? "#ff6b36" : "#ffe170", impactFade, angle + Math.PI / 2);
+          if (index % 5 === 0) stroke([[target.x, target.y], [px, py]], "#ffc25b", 1.5, impactFade * .65);
         }
       }
       if (!impacted && progress > .68) {
