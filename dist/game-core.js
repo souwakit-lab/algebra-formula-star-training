@@ -28,7 +28,8 @@
       { formula:"P=x²+3", valueTex:"x=4", answer:19, steps:["把 x=4 代入 P=x²+3。","P=4²+3","P=19"] },
       { formula:"q=\\frac{a}{2}+5", valueTex:"a=8", answer:9, steps:["把 a=8 代入 q=a/2+5。","q=\\frac{8}{2}+5","q=9"] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
-    return numericQuestion(2, "單變數代入", `${item.formula}　${item.valueTex}　求未知量`, item.answer, item.steps);
+    const target = item.formula.split("=")[0];
+    return numericQuestion(2, "單變數代入", `${item.formula}　${item.valueTex}　求 ${target}`, item.answer, item.steps);
   }
   function generateLevel3(rng) {
     const items = [
@@ -36,7 +37,8 @@
       { formula:"T=5a-2b", values:"a=3，b=2", answer:11, steps:["把 a=3、b=2 代入 T=5a-2b。","T=5(3)-2(2)","T=11"] },
       { formula:"F=3m+n", values:"m=6，n=4", answer:22, steps:["把 m=6、n=4 代入 F=3m+n。","F=3(6)+4","F=22"] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
-    return numericQuestion(3, "雙變數代入", `${item.formula}　${item.values}　求結果`, item.answer, item.steps);
+    const target = item.formula.split("=")[0];
+    return numericQuestion(3, "雙變數代入", `${item.formula}　${item.values}　求 ${target}`, item.answer, item.steps);
   }
   function generateLevel4(rng) {
     const items = [
@@ -45,7 +47,8 @@
       { formula:"q=2(x+y)-1", values:"x=-2，y=5", answer:5, steps:["先把 x=-2、y=5 代入括號。","q=2(-2+5)-1","q=5"] },
       { formula:"R=\\frac{p+q}{3}", values:"p=-6，q=9", answer:1, steps:["把 p=-6、q=9 代入分子。","R=\\frac{-6+9}{3}","R=1"] },
     ]; const item = items[randomInt(0, items.length - 1, rng)];
-    return numericQuestion(4, "進階代入", `${item.formula}　${item.values}　求結果`, item.answer, item.steps);
+    const target = item.formula.split("=")[0];
+    return numericQuestion(4, "進階代入", `${item.formula}　${item.values}　求 ${target}`, item.answer, item.steps);
   }
   function generateLevel5(rng) {
     const items = [
