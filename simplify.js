@@ -51,6 +51,11 @@
     locked = true; const feedback = $("feedback"); feedback.className = `feedback show ${correct ? "correct" : "wrong"}`;
     if (correct) { score += 15; streak += 1; solvedInLevel += 1; feedback.innerHTML = `<strong>答對！化簡得很好。</strong><small>+15 分　目前連勝 ${streak}</small>`; }
     else { score = Math.max(0, score - 10); streak = 0; feedback.innerHTML = `<strong>再看清楚同類項及運算次序。</strong><small>−10 分　參考答案</small><div class="solution"></div>`; renderMath(feedback.querySelector(".solution"), question.answer); }
+    if (typeof Battle !== "undefined") {
+      Battle.updateStatus({ combo:streak });
+      if (correct) Battle.randomCast(streak, 15);
+      else Battle.enemyBreath();
+    }
     $("score").textContent = score; $("streak").textContent = streak; updateAnswer();
     const submit = $("keypad").querySelector(".submit"); submit.disabled = true;
     if (correct && solvedInLevel >= levelTotal) {
@@ -63,5 +68,7 @@
     if (/^[0-9a-zA-Z()+\-*/^]$/.test(event.key)) { event.preventDefault(); handleKey(event.key.toLowerCase()); }
     else if (event.key === "Enter") submitAnswer(); else if (event.key === "Backspace") handleKey("⌫");
   });
-  makeKeypad(); updateMeta(); nextQuestion();
+  makeKeypad();
+  if (typeof Battle !== "undefined") Battle.init();
+  updateMeta(); nextQuestion();
 })();
