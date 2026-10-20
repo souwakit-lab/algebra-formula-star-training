@@ -150,7 +150,10 @@
   }
   function canonical(value) { return formatPolynomial(parsePolynomial(value)); }
   function display(value) { return canonical(value).replace(/\^2/g, "²").replace(/\^3/g, "³").replace(/\^4/g, "⁴").replace(/\*/g, "×").replace(/\//g, "÷").replace(/-/g, "−").replace(/\+/g, "＋"); }
-  function question(level, expression, answer, hint) { return { level, type:LEVELS[level].title, expression, answer:canonical(answer), hint }; }
+  function formatCoefficients(value) {
+    return String(value).replace(/(^|[+＋\-−=(（×*，,\s])1(?=[A-Za-z])/g, "$1");
+  }
+  function question(level, expression, answer, hint) { return { level, type:LEVELS[level].title, expression:formatCoefficients(expression), answer:canonical(answer), hint }; }
   function generateQuestion(level, rng = Math.random) {
     const safeLevel = Math.min(6, Math.max(1, Number(level) || 1));
     const number = (min, max) => min + rand(rng, max - min + 1);
@@ -185,5 +188,5 @@
     }
     return question(safeLevel, expression, expression, LEVELS[safeLevel].hint);
   }
-  return { LEVELS, normalizeInput, parsePolynomial, canonical, display, generateQuestion };
+  return { LEVELS, normalizeInput, parsePolynomial, canonical, display, formatCoefficients, generateQuestion };
 });

@@ -22,7 +22,7 @@
   }
 
   function cleanText(value) {
-    return String(value || "").replace(/-/g, "−");
+    return String(value || "").replace(/(^|[+＋\-−=(（×*，,\s])1(?=[A-Za-z])/g, "$1").replace(/-/g, "−");
   }
 
   function tokenize(tex) {
