@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
   <title>化簡代數式星術訓練</title>
-  <link rel="stylesheet" href="simplify.css?v=20261021a">
+  <link rel="stylesheet" href="simplify.css?v=20261021b">
   <link rel="stylesheet" href="battle-ui.css?v=20261020d">
   <script defer src="math-renderer.js?v=20261021a"></script>
   <script defer src="simplify-core.js?v=20261021d"></script>
   <script defer src="battle.js?v=20261020d"></script>
-  <script defer src="simplify.js?v=20261021c"></script>
+  <script defer src="simplify.js?v=20261021d"></script>
 </head>
 <body>
   <section id="login-screen" class="login-screen">
@@ -19,15 +19,20 @@
       <div class="login-art"><img src="hero-lv1.webp" alt="星術學徒"></div>
       <label>班別<select id="class-select" aria-label="選擇班別"></select></label>
       <label>學號<select id="id-select" aria-label="選擇學號"></select></label>
-      <div class="student-preview"><span>學生</span><strong id="student-name-display">請選擇班別與學號</strong></div>
+      <div class="student-preview"><strong id="student-name-display">請選擇班別與學號</strong></div>
       <button id="login-button" type="button">進入訓練</button>
     </div>
   </section>
   <main id="game-shell" class="game-shell hidden" aria-hidden="true">
     <header class="topbar">
       <div class="brand"><span class="brand-mark">S</span><div><small>ALGEBRA SIMPLIFY ACADEMY</small><h1>化簡代數式星術訓練</h1></div></div>
-      <div class="scoreboard"><span class="student-identity"><b id="player-class">尚未登入</b><strong id="player-name">學生</strong></span><button id="logout-button" type="button" title="切換學生">切換</button><span>總分</span><strong id="score">0</strong><span>連勝 <b id="streak">0</b></span></div>
+      <div class="scoreboard"><span class="student-identity"><b id="player-class">尚未登入</b><strong id="player-name">—</strong></span><button id="logout-button" type="button" title="返回登入" aria-label="返回登入">↪</button><span>總分</span><strong id="score">0</strong><span>連勝 <b id="streak">0</b></span></div>
     </header>
+    <section class="student-stats" aria-label="個人答題統計">
+      <div><span>已答題</span><strong id="total-count">0</strong></div><div><span>答對</span><strong id="correct-count">0</strong></div><div><span>答錯</span><strong id="wrong-count">0</strong></div><div><span>正確率</span><strong id="accuracy-count">--</strong></div><div><span>目前連勝</span><strong id="streak-count">0</strong></div>
+    </section>
+    <nav class="stats-level-filter" aria-label="答題統計範圍"><span>統計範圍</span><div role="tablist" aria-label="按程度查看答題統計"><button class="active" type="button" role="tab" aria-selected="true" data-stats-level="all">全部</button><button type="button" role="tab" aria-selected="false" data-stats-level="1">L1</button><button type="button" role="tab" aria-selected="false" data-stats-level="2">L2</button><button type="button" role="tab" aria-selected="false" data-stats-level="3">L3</button><button type="button" role="tab" aria-selected="false" data-stats-level="4">L4</button><button type="button" role="tab" aria-selected="false" data-stats-level="5">L5</button><button type="button" role="tab" aria-selected="false" data-stats-level="6">L6</button></div></nav>
+    <div class="student-downloads"><button id="download-student-overall" type="button">⇩ <span>總體數據</span></button><button id="view-student-mistakes" type="button">☷ <span>檢視錯題</span></button><span id="student-download-status" role="status" aria-live="polite"></span></div>
     <section class="level-strip">
       <div><span id="level-label">LEVEL 1</span><strong id="level-title">合併同類項</strong></div>
       <div class="xp"><span id="progress-copy">0 / 150 XP</span><div role="progressbar" aria-label="本關經驗值" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><i id="progress-bar"></i></div></div>
@@ -48,5 +53,6 @@
     </section>
   </main>
   <div id="battle-effect-layer" class="battle-effect-layer" aria-hidden="true"></div>
+  <dialog id="mistake-dialog" class="mistake-dialog"><header><div><span>ERROR REVIEW</span><h2>我的錯題紀錄</h2><p id="mistake-dialog-summary">目前沒有錯題</p></div><button id="close-mistake-dialog" type="button" aria-label="關閉錯題紀錄">×</button></header><div id="mistake-dialog-body" class="mistake-dialog-body"></div></dialog>
 </body>
 </html>
