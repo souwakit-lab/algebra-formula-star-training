@@ -10,8 +10,8 @@
   <script defer src="math-renderer.js?v=20261021a"></script>
   <script defer src="simplify-core.js?v=20261021d"></script>
   <script defer src="battle.js?v=20261020d"></script>
-  <script defer src="config.js"></script>
-  <script defer src="simplify.js?v=20261021e"></script>
+  <script defer src="config.js?v=20261021-sync2"></script>
+  <script defer src="simplify.js?v=20261021f"></script>
 </head>
 <body>
   <section id="login-screen" class="login-screen">
@@ -29,6 +29,7 @@
       <div class="brand"><span class="brand-mark">S</span><div><small>ALGEBRA SIMPLIFY ACADEMY</small><h1>化簡代數式星術訓練</h1></div></div>
       <div class="scoreboard"><span class="student-identity"><b id="player-class">尚未登入</b><strong id="player-name">—</strong></span><button id="logout-button" type="button" title="返回登入" aria-label="返回登入">↪</button><span>總分</span><strong id="score">0</strong><span>連勝 <b id="streak">0</b></span></div>
     </header>
+    <p id="sync-status" role="status" aria-live="polite" style="margin:0;color:var(--muted);font-size:11px;text-align:right">等待連接</p>
     <section class="student-stats" aria-label="個人答題統計">
       <div><span>已答題</span><strong id="total-count">0</strong></div><div><span>答對</span><strong id="correct-count">0</strong></div><div><span>答錯</span><strong id="wrong-count">0</strong></div><div><span>正確率</span><strong id="accuracy-count">--</strong></div><div><span>目前連勝</span><strong id="streak-count">0</strong></div>
     </section>

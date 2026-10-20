@@ -9,7 +9,7 @@
     SG1A: { 1:"歐陽周政",2:"歐芷菱",3:"蔡銀杰",4:"陳俊希",5:"陳炯文",6:"陳宇恆",7:"陳柏豪",8:"卓莉珊",9:"莊超穎",10:"鍾欣澄",11:"馮子軒",12:"黃鈞亮",13:"林立",14:"李振豪",15:"李梓琪",16:"李沁穎",17:"李宇杰",18:"梁依靜",19:"梁羽盈",20:"盧佩辰",21:"黃夢琪",22:"趙家美",23:"歐陽浩賢",24:"陳家莉",25:"歐承澔",26:"張子茵",27:"徐希瑜",28:"邢嘉豪",29:"楊昊宇",30:"邱嘉成",31:"郭添滿",32:"王思淇",33:"黃鈺裕",34:"黃健樺" },
     SG1B: { 1:"陳  毅",2:"曾蔚喬",3:"鄭凱琳",4:"陳思如",5:"程家儀",6:"張芯然",7:"蔡朗然",8:"董詩予",9:"馮家宥",10:"管梓皓",11:"黎芷盈",12:"劉德偉",13:"李善婷",14:"李雅琪",15:"凌寶旋",16:"吳靖怡",17:"宋允曦",18:"譚梓軒",19:"譚詩敏",20:"袁渟欣",21:"曾凱龍",22:"鄭家林",23:"張昊臻",24:"何家浩",25:"陳梓峰",26:"林灝晴",27:"林文軒",28:"梁王恩",30:"盧家豪",31:"勞允睿",32:"勞允堤",33:"黃曉樂",34:"王敬興" },
   };
-  let player = null; let pendingAnswers = []; let pendingDamage = 0; let syncInFlight = false;
+  let player = null; let pendingAnswers = []; let pendingDamage = 0; let syncInFlight = false; let pendingBatch = null; let retryTimer; let nextTimer; let session = 0;
   let level = 1; let questionNumber = 0; let score = 0; let streak = 0; let levelXp = 0; let mistakes = 0; let total = 0; let correctCount = 0; let levelStats = emptyLevelStats(); let mistakeHistory = []; let selectedStatsLevel = "all"; let question; let entry = ""; let locked = true;
   const levels = core.LEVELS;
   const keyLayout = [
@@ -22,11 +22,12 @@
   function storageKey() { return `${STORAGE_KEY}:${player.className}:${player.id}`; }
   function saveProgress() {
     if (!player) return;
-    localStorage.setItem(storageKey(), JSON.stringify({ level, score, streak, levelXp, mistakes, questionNumber, total, correctCount, levelStats, mistakeHistory }));
+    localStorage.setItem(storageKey(), JSON.stringify({ level, score, streak, levelXp, mistakes, questionNumber, total, correctCount, levelStats, mistakeHistory, pendingAnswers, pendingBatch }));
   }
   function loadProgress() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey())) || {};
+      pendingAnswers = Array.isArray(saved.pendingAnswers) ? saved.pendingAnswers : []; pendingBatch = saved.pendingBatch || null;
       level = Math.min(6, Math.max(1, Number(saved.level) || 1)); score = Math.max(0, Number(saved.score) || 0);
       streak = Math.max(0, Number(saved.streak) || 0); levelXp = Math.min(levelTotal, Math.max(0, Number(saved.levelXp) || 0));
       mistakes = Math.max(0, Number(saved.mistakes) || 0); questionNumber = Math.max(0, Number(saved.questionNumber) || 0); total = Math.max(0, Number(saved.total) || 0); correctCount = Math.min(total, Math.max(0, Number(saved.correctCount) || 0)); levelStats = normalizeLevelStats(saved.levelStats); mistakeHistory = Array.isArray(saved.mistakeHistory) ? saved.mistakeHistory.slice(-300) : [];
@@ -42,23 +43,51 @@
     if ([...select.options].some((option) => option.value === oldId)) select.value = oldId;
   }
   function updateStudentPreview() { $("student-name-display").textContent = studentDB[$("class-select").value]?.[$("id-select").value] || "請選擇班別與學號"; }
-  function login() {
+  async function login() {
     const className = $("class-select").value; const id = Number($("id-select").value); const name = studentDB[className]?.[id];
     if (!name) return;
-    player = { className, id, name }; loadProgress(); locked = false;
+    const currentSession = ++session; player = { className, id, name }; loadProgress(); locked = true;
+    $("login-button").disabled = true; $("login-button").textContent = "讀取進度中…";
+    try {
+      if (API_URL) {
+        const data = await readRemote("getSimplifyStudentExportData", { className, id });
+        if (currentSession !== session) return;
+        if (data.player && Number(data.player.total) >= total && !pendingAnswers.length && !pendingBatch) {
+          const remote = data.player; level = Math.min(6, Math.max(1, Number(remote.level) || 1)); levelXp = Math.min(levelTotal, Math.max(0, Number(remote.xp) || 0)); total = Number(remote.total) || 0; correctCount = Number(remote.correct) || 0; streak = Number(remote.streak) || 0; mistakes = Number(remote.mistakes) || 0; score = (level - 1) * levelTotal + levelXp;
+          const remoteStats = Object.fromEntries((data.levelStats || []).map((item) => [item.level,item]));
+          [1,2,3,4,5,6].forEach((number) => { if (Number(remoteStats[number]?.total || 0) >= levelStats[number].total) levelStats[number] = remoteStats[number] || levelStats[number]; });
+        }
+        const history = [...mistakeHistory, ...(data.wrongAnswers || [])]; mistakeHistory = [...new Map(history.map((item) => [`${item.timestamp}|${item.level}|${item.question}|${item.studentAnswer}`, item])).values()].slice(-300);
+        setSyncStatus("已連接戰情室");
+      } else setSyncStatus("本機練習");
+    } catch { setSyncStatus("進度已存本機，等待同步"); }
+    $("login-button").disabled = false; $("login-button").textContent = "進入訓練"; locked = false;
     $("player-class").textContent = `${className} ${id} 號`; $("player-name").textContent = name;
     $("login-screen").classList.add("hidden"); $("game-shell").classList.remove("hidden"); $("game-shell").setAttribute("aria-hidden", "false");
     selectedStatsLevel = "all"; document.querySelectorAll("[data-stats-level]").forEach((button) => { button.classList.toggle("active", button.dataset.statsLevel === "all"); button.setAttribute("aria-selected", button.dataset.statsLevel === "all" ? "true" : "false"); });
     nextQuestion();
+    $("score").textContent = score; $("streak").textContent = streak; saveProgress(); syncProgress(true);
   }
   function logout() {
-    saveProgress(); player = null; locked = true;
+    saveProgress(); session += 1; clearTimeout(retryTimer); clearTimeout(nextTimer); pendingAnswers = []; pendingBatch = null; player = null; locked = true;
     $("game-shell").classList.add("hidden"); $("game-shell").setAttribute("aria-hidden", "true"); $("login-screen").classList.remove("hidden");
   }
-  async function syncProgress() {
-    if (!API_URL || !player || syncInFlight) return; syncInFlight = true;
-    const answers = pendingAnswers.splice(0, 10); const damage = pendingDamage; pendingDamage = 0;
-    try { await fetch(`${API_URL}?action=saveSimplify`, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:`data=${encodeURIComponent(JSON.stringify({ ...player, level, xp:levelXp, total, correct:correctCount, streak, mistakes, answers, addedDamage:damage }))}` }); } catch { pendingAnswers.unshift(...answers); pendingDamage += damage; } finally { syncInFlight = false; if (pendingAnswers.length) syncProgress(); }
+  function setSyncStatus(message) { $("sync-status").textContent = message; }
+  async function readRemote(action, parameters) {
+    const response = await fetch(`${API_URL}?${new URLSearchParams({ action, ...parameters, t:Date.now() })}`, { cache:"no-store", signal:AbortSignal.timeout(20000) });
+    const data = await response.json(); if (!response.ok || data.ok === false || data.service) throw new Error(data.error || "Sync unavailable"); return data;
+  }
+  async function syncProgress(force = false) {
+    if (!API_URL || !player || syncInFlight || (!force && !pendingAnswers.length && !pendingBatch)) return;
+    const currentSession = session; syncInFlight = true; clearTimeout(retryTimer); let failed = false;
+    if (!pendingBatch) { const answers = pendingAnswers.splice(0, 10); pendingBatch = { ...player, batchId:crypto.randomUUID(), level, xp:levelXp, total, correct:correctCount, streak, mistakes, levelStats, answers, addedDamage:answers.filter((answer) => answer.isCorrect).length * 15 }; saveProgress(); }
+    const batch = pendingBatch; setSyncStatus("同步中…");
+    try {
+      await fetch(`${API_URL}?action=saveSimplify`, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:`data=${encodeURIComponent(JSON.stringify(batch))}`, signal:AbortSignal.timeout(20000) });
+      const receipt = await readRemote("getSimplifySyncStatus", { className:batch.className, id:batch.id, batchId:batch.batchId }); if (!receipt.received) throw new Error("Waiting for receipt");
+      if (currentSession === session) { pendingBatch = null; saveProgress(); setSyncStatus("已同步至戰情室"); }
+    } catch { failed = true; if (currentSession === session) setSyncStatus("進度已存本機，等待同步"); }
+    finally { syncInFlight = false; if (player) { if (failed && currentSession === session) retryTimer = setTimeout(() => syncProgress(), 15000); else if (pendingAnswers.length || pendingBatch) retryTimer = setTimeout(() => syncProgress(), 500); } }
   }
   function makeKeypad() {
     const keypad = $("keypad");
@@ -138,7 +167,7 @@
     $("score").textContent = score; $("streak").textContent = streak; updateMeta(); updateAnswer();
     const submit = $("keypad").querySelector(".submit"); submit.disabled = true;
     if (result.completed) feedback.innerHTML += "<small>　六關完成！你已成為化簡術大師。</small>";
-    else setTimeout(nextQuestion, correct ? 850 : 1200);
+    else nextTimer = setTimeout(nextQuestion, correct ? 850 : 1200);
   }
   function renderStudentStats() {
     const stats = selectedStatsLevel === "all" ? { total, correct:correctCount, streak } : normalizeLevelStats(levelStats)[Number(selectedStatsLevel)];
@@ -169,5 +198,6 @@
     else if (event.key === "Enter") submitAnswer(); else if (event.key === "Backspace") handleKey("⌫");
   });
   if (typeof Battle !== "undefined") Battle.init();
+  window.addEventListener("online", () => syncProgress(true));
   populateLogin();
 })();

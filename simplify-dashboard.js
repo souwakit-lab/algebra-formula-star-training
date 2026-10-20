@@ -31,7 +31,7 @@ function startRefreshTimer() {
 }
 
 function initQrCode() {
-  const studentUrl = window.SIMPLIFY_CONFIG?.studentUrl || new URL("index.html", location.href).href;
+  const studentUrl = window.SIMPLIFY_CONFIG?.studentUrl || new URL("simplify.html", location.href).href;
   $("student-link").href = studentUrl;
   if (window.QRCode) new QRCode($("join-qr"), { text: studentUrl, width: 180, height: 180, colorDark: "#0d1524", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
 }
@@ -48,7 +48,9 @@ async function refreshData() {
   try {
     const response = await fetch(`${API_URL}?action=getSimplifyDashboardData&className=${encodeURIComponent(className)}&t=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error("Unable to load dashboard");
-    renderDashboard(await response.json());
+    const data = await response.json();
+    if (!Array.isArray(data.players) || data.ok === false) throw new Error(data.error || "Dashboard unavailable");
+    renderDashboard(data);
   } catch (error) {
     console.error(error);
     $("updated-at").textContent = "資料連線中斷";
