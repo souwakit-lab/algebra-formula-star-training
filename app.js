@@ -10,12 +10,12 @@ const studentDB = {
 };
 
 const levelInfo = {
-  1: { title:"公式或代數式", rank:"公式觀察者", mission:"分辨公式與代數式", hint:"留意等號及變數之間的關係。", avatar:"hero-lv1.webp" },
-  2: { title:"單變數代入", rank:"代入學徒", mission:"把一個數值代入公式", hint:"負數代入時要保留括號；平方不使用負數。", avatar:"hero-lv2.webp" },
-  3: { title:"雙變數代入", rank:"雙元術士", mission:"把兩個數值代入公式", hint:"先分別代入兩個變數，再完成運算。", avatar:"hero-lv3.webp" },
-  4: { title:"進階代入", rank:"括號法師", mission:"處理負數、括號與分式", hint:"先處理括號和分式，再按運算次序計算。", avatar:"hero-lv4.webp" },
-  5: { title:"生活情境公式", rank:"應用賢者", mission:"用公式解決生活問題", hint:"從題目找出已知數值，再代入公式。", avatar:"hero-lv5.webp" },
-  6: { title:"圖形公式", rank:"幾何大法師", mission:"建立公式再代入", hint:"先選出圖形公式，再計算周界。", avatar:"hero-lv5.webp" },
+  1: { title:"公式或代數式", rank:"初級魔法學徒", mission:"分辨公式與代數式", hint:"留意等號及變數之間的關係。", avatar:"hero-lv1.webp" },
+  2: { title:"單變數代入", rank:"星紋術士", mission:"把一個數值代入公式", hint:"負數代入時要保留括號；平方不使用負數。", avatar:"hero-lv2.webp" },
+  3: { title:"雙變數代入", rank:"星海導師", mission:"把兩個數值代入公式", hint:"先分別代入兩個變數，再完成運算。", avatar:"hero-lv3.webp" },
+  4: { title:"進階代入", rank:"極光賢者", mission:"處理負數、括號與分式", hint:"先處理括號和分式，再按運算次序計算。", avatar:"hero-lv4.webp" },
+  5: { title:"生活情境公式", rank:"星穹大法皇", mission:"用公式解決生活問題", hint:"從題目找出已知數值，再代入公式。", avatar:"hero-lv5.webp" },
+  6: { title:"圖形公式", rank:"星穹大法皇", mission:"建立公式再代入", hint:"先選出圖形公式，再計算周界。", avatar:"hero-lv5.webp" },
 };
 
 let progress = defaultProgress();
