@@ -384,8 +384,6 @@ function updateProgressUI() {
   $("xp-bar").parentElement.setAttribute("aria-valuenow", progress.xp);
   renderStudentStats();
   $("player-avatar").src = info.avatar;
-  $("battle-hero").src = info.avatar;
-  document.querySelector(".hero-3d-wrap .character-depth").src = info.avatar;
   $("rank-chip").textContent = info.rank;
   $("mission-title").textContent = info.mission;
   $("mission-hint").textContent = info.hint;

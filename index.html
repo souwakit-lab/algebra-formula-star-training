@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
   <title>通項公式星術訓練</title>
-  <link rel="stylesheet" href="styles.css?v=20261020b">
-  <link rel="stylesheet" href="battle-ui.css?v=20261020b">
+  <link rel="stylesheet" href="styles.css?v=20261020c">
+  <link rel="stylesheet" href="battle-ui.css?v=20261020c">
   <script async id="lucide-script" src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script defer src="vendor/fraction.min.js"></script>
   <script defer src="math-renderer.js?v=20261020b"></script>
   <script defer src="game-core.js?v=20261020b"></script>
   <script defer src="config.js"></script>
-  <script defer src="battle.js?v=20261020b"></script>
-  <script defer src="app.js?v=20261020b"></script>
+  <script defer src="battle.js?v=20261020c"></script>
+  <script defer src="app.js?v=20261020c"></script>
 </head>
 <body>
   <section id="login-screen" class="login-screen">
@@ -111,32 +111,6 @@
           <span id="question-type">直接代入</span>
           <span>第 <strong id="question-number">1</strong> 題</span>
         </div>
-        <section class="battle-arena" aria-label="星術戰場">
-          <div class="battle-heading"><span>星序術式 <small>SEQUENCE ARTS</small></span><button id="sound-toggle" type="button" aria-pressed="false">音效：關</button></div>
-          <div class="combat-hud"><div><span>混沌序列巨龍</span><strong id="combat-hp">100%</strong></div><div class="combat-health"><span id="combat-hp-fill"></span></div></div>
-          <div class="battle-scene">
-            <div class="battle-floor"></div>
-            <div class="hero-3d-wrap"><img class="character-depth" src="hero-lv1.webp" alt="" aria-hidden="true"><img id="battle-hero" class="battle-hero" src="hero-lv1.webp" alt="星術學徒"></div>
-            <div class="monster-depth-wrap"><img class="character-depth" src="monster-lv7.webp" alt="" aria-hidden="true"><img id="battle-monster" class="battle-monster" src="monster-lv7.webp" alt="混沌序列巨龍"></div>
-            <div id="move-banner" aria-hidden="true"><small id="move-tag"></small><strong id="move-name"></strong></div>
-            <div id="vfx-overlay" aria-hidden="true"><img src="vfx-atlas.webp" alt=""></div>
-            <div id="frame-vfx" aria-hidden="true"><div class="core-fall-sheet"></div></div>
-            <canvas id="battle-canvas" aria-hidden="true"></canvas>
-            <div id="battle-damage" aria-hidden="true"></div>
-          </div>
-          <div class="cast-status"><div class="battle-caption" id="battle-caption" role="status">答對隨機施放六種星術</div><span id="cast-phase">就緒</span><span id="cast-time">—</span></div>
-          <div class="cast-track" aria-hidden="true"><span id="cast-fill"></span></div>
-          <div class="qi-hud"><span>連答紀錄</span><div id="qi-pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><strong id="qi-copy">0 連答</strong></div>
-          <div class="skill-previews" aria-label="六種星術技能">
-            <button type="button" data-skill="2" aria-label="試放潮汐裂斬"><span class="skill-glyph"><i data-lucide="waves"></i></span><strong>潮汐裂斬</strong><small>隨機</small></button>
-            <button type="button" data-skill="5" aria-label="試放熔核天墜"><span class="skill-glyph"><i data-lucide="flame"></i></span><strong>熔核天墜</strong><small>隨機</small></button>
-            <button type="button" data-skill="10" aria-label="試放蒼穹導束"><span class="skill-glyph"><i data-lucide="orbit"></i></span><strong>蒼穹導束</strong><small>隨機</small></button>
-            <button type="button" data-skill="3" aria-label="試放深淵絞界"><span class="skill-glyph"><i data-lucide="aperture"></i></span><strong>深淵絞界</strong><small>隨機</small></button>
-            <button type="button" data-skill="music" aria-label="試放星弦共鳴"><span class="skill-glyph"><i data-lucide="music-2"></i></span><strong>星弦共鳴</strong><small>隨機</small></button>
-            <button id="ultimate-preview" type="button" aria-label="試放星劍天降"><span class="skill-glyph"><i data-lucide="sword"></i></span><strong>星劍天降</strong><small>隨機</small></button>
-          </div>
-        </section>
-
         <div id="pattern-preview" class="pattern-preview hidden" aria-label="圖案數列示意"></div>
         <div id="question-math" class="math-question" aria-label="題目"></div>
         <div class="equals-line"><span></span><strong>=</strong><span></span></div>

@@ -217,7 +217,7 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
 .password-field input:focus { outline:2px solid var(--sky); outline-offset:1px; }
 .password-dialog .password-error { min-height:20px; color:var(--coral); font-weight:700; }
 
-@media (max-width: 1050px) {
+@media (max-width: 900px) {
   .workspace { grid-template-columns: 220px minmax(390px, 1fr); }
   .map-panel { display:grid; grid-template-columns:220px 1fr; gap:16px; grid-column:1 / -1; min-height:0; }
   .guardian { min-height:260px; border-right:1px solid var(--line); border-bottom:0; }
@@ -287,10 +287,6 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
 }
 
 /* General-term game additions. */
-.practice-panel .battle-arena { width:100%; margin:14px 0 8px; align-self:stretch; }
-.practice-panel .battle-scene { height:240px; }
-.practice-panel .hero-3d-wrap { left:2%; width:38%; }
-.practice-panel .monster-depth-wrap { right:2%; width:42%; }
 .practice-panel .math-question { min-height:120px; margin-top:6px; font-size:clamp(24px,4vw,42px); }
 .pattern-preview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; width:100%; margin:8px 0 2px; }
 .pattern-preview > div { display:grid; grid-template-rows:1fr auto; gap:6px; min-height:84px; padding:8px 5px; border:1px solid var(--line); background:#111a2a; }
@@ -308,13 +304,11 @@ dialog::backdrop { background: rgba(5, 9, 16, .78); backdrop-filter: blur(4px); 
 .login-art img { object-fit:contain; }
 .avatar-stage img { width:min(235px,100%); max-height:265px; }
 
-@media (max-width:1050px) {
+@media (max-width:900px) {
   .level-map { grid-template-columns:repeat(5,1fr); }
 }
 
 @media (max-width:760px) {
-  .practice-panel .battle-scene { height:205px; }
-  .practice-panel .battle-arena { order:0; }
   .pattern-preview { grid-template-columns:repeat(2,1fr); }
   .level-map { grid-template-columns:1fr; }
 }
