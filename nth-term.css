@@ -1,0 +1,17 @@
+.practice-panel .math-question{display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;min-height:138px;margin-top:6px;font-size:clamp(28px,3.4vw,42px)}
+.question-instruction{color:var(--muted);font-size:13px;font-weight:500}
+.question-target{font-size:18px;font-weight:700;color:var(--text)}
+.math-question>div{max-width:100%;text-align:center}
+.math-question math{max-width:100%}
+.practice-panel .math-question .question-instruction,.practice-panel .math-question .question-target{line-height:1.4}
+.mistake-question{overflow-wrap:anywhere}
+.feedback:not(.show){display:none}
+.stats-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0}
+.stats-tools .stats-level-filter,.stats-tools .student-downloads{margin:0}
+@media(min-width:761px) and (max-width:900px){.level-map{grid-template-columns:repeat(5,1fr)}}
+@media(min-width:901px) and (max-height:850px){
+ .app-shell{padding-top:8px}.topbar{min-height:54px}.student-stats{margin:4px 0 6px}.student-stats div{padding:5px 12px}.stats-level-filter{margin-bottom:6px}.student-downloads{margin-bottom:6px}.level-strip{margin:6px 0 10px;padding:9px 18px}.practice-panel{padding:12px 18px}.practice-panel .math-question{min-height:115px;gap:5px;font-size:32px}.answer-display{height:58px;margin:6px 0}.equals-line{margin:5px 0}.keypad{grid-template-rows:repeat(4,43px);margin-top:7px}.question-target{font-size:16px}
+}
+@media(min-width:901px) and (max-height:850px){.practice-panel .math-question{min-height:90px;gap:4px}.answer-display{height:48px}.keypad{grid-template-rows:repeat(4,38px);gap:6px}.stats-tools{margin:5px 0}.practice-panel{padding-top:10px}.feedback.show{padding:6px 10px}}
+@media(max-width:760px){.stats-tools{display:block}.stats-tools .student-downloads{margin-top:8px}}
+@media(max-width:500px){.practice-panel .math-question{font-size:30px}.question-instruction{font-size:12px}.question-target{font-size:17px}}

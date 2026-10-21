@@ -10,3 +10,7 @@ window.SIMPLIFY_CONFIG = {
   apiUrl: window.GENERAL_TERM_CONFIG.apiUrl,
   studentUrl: location.hostname === "127.0.0.1" || location.hostname === "localhost" ? new URL("simplify.html", location.href).href : "https://souwakit-lab.github.io/algebra-formula-star-training/simplify.html",
 };
+window.NTH_TERM_CONFIG = {
+  apiUrl: window.GENERAL_TERM_CONFIG.apiUrl,
+  studentUrl: new URL("nth-term.html", location.href).href,
+};
