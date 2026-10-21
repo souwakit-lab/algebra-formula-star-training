@@ -23,7 +23,7 @@
     const [top,bottom = "1"] = answerText.replace("-", "").split("/").map(Number);
     if (Math.abs(answer.valueOf()) > 100 || top > 100 || bottom > 100) return;
     const answerTex = base.fractionTex(answer);
-    pools[level][template].push({ level, template, formula, n, parameters, type:LEVELS[level].title,
+    pools[level][template].push({ level, template, formula, n, parameters, key:`${level}|${formula}|${n}`, type:LEVELS[level].title,
       tex:`已知通項公式 T_n=${formula}，求第 ${n} 項。`,
       answer, answerTex, inputKind:"number",
       steps:[`求第 ${n} 項，把 n=${n} 代入通項公式。`, `T_{${n}}=${substitution}`, `T_{${n}}=${answerTex}`] });
@@ -65,11 +65,13 @@
     else { const types = Object.keys(pools[level]); template = types[Math.min(types.length-1,Math.floor(rng()*types.length))]; }
     const used = new Set(recent);
     const selectedPool = signPool || pools[level][template];
-    let available = selectedPool.filter((q) => !used.has(q.tex));
-    if (!available.length && !signPool) available = Object.values(pools[level]).flat().filter((q) => !used.has(q.tex));
+    let available = selectedPool.filter((q) => !used.has(q.key) && !used.has(q.tex));
+    if (!available.length && !signPool) available = Object.values(pools[level]).flat().filter((q) => !used.has(q.key) && !used.has(q.tex));
     if (!available.length) available = selectedPool;
     const chosen = available[Math.min(available.length-1,Math.floor(rng()*available.length))];
-    return { ...chosen, steps:[...chosen.steps], parameters:{...chosen.parameters} };
+    const targetNotation = rng() < .5 ? "words" : "symbol";
+    const targetTex = targetNotation === "symbol" ? `求 T_{${chosen.n}}。` : `求第 ${chosen.n} 項。`;
+    return { ...chosen, targetNotation, targetTex, tex:`已知通項公式 T_n=${chosen.formula}，${targetTex}`, steps:[...chosen.steps], parameters:{...chosen.parameters} };
   }
   function applyResult(progress, correct) {
     const next = { ...progress, level:Math.min(5, Math.max(1, Number(progress.level) || 1)) };

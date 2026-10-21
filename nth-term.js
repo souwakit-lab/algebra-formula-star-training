@@ -157,7 +157,7 @@ function updateStudentPreview() {
 }
 
 function questionKey(item) {
-  return item.tex;
+  return item.key;
 }
 
 async function login() {
@@ -245,7 +245,10 @@ function nextQuestion() {
   const questionBox = $("question-math"); questionBox.textContent = "";
   const instruction = document.createElement("div"); instruction.className = "question-instruction"; instruction.textContent = "已知數列的通項公式";
   const formula = document.createElement("div"); renderMath(formula, `T_n=${question.formula}`);
-  const target = document.createElement("div"); target.className = "question-target"; target.textContent = `求第 ${question.n} 項。`;
+  const target = document.createElement("div"); target.className = "question-target";
+  if (question.targetNotation === "symbol") {
+    const term = document.createElement("span"); renderMath(term, `T_{${question.n}}`); target.append("求 ", term, "。");
+  } else target.textContent = question.targetTex;
   questionBox.append(instruction, formula, target); questionBox.setAttribute("aria-label", question.tex);
   renderEntry();
 }
