@@ -52,15 +52,22 @@
     if (!a || !b || a*d === b*c) continue;
     add(5,"linearRatio",`\\frac{${linear(a,b)}}{${linear(c,d)}}`,`\\frac{${a}\\times${n}${constant(b)}}{${c}\\times${n}+${d}}`,a*n+b,c*n+d,n,{a,b,c,d});
   }
+  // Count the effective coefficient of n: b-an has coefficient -a.
+  const levelTwoSignPools = [0,1,2].map((negativeCount) => Object.values(pools[2]).flat().filter((q) => {
+    const a = q.template === "subtract" ? -q.parameters.a : q.parameters.a;
+    return Number(a < 0) + Number(q.parameters.b < 0) === negativeCount;
+  }));
   function generateQuestion(level, rng = Math.random, recent = []) {
     level = Math.min(5, Math.max(1, Number(level) || 1));
-    let template;
-    if (level === 3) { const chance = rng(); template = chance < .70 ? "product" : chance < .85 ? "square" : "cube"; }
+    let template; let signPool;
+    if (level === 2) { const chance = rng(); signPool = levelTwoSignPools[chance < .70 ? 0 : chance < .90 ? 1 : 2]; }
+    else if (level === 3) { const chance = rng(); template = chance < .70 ? "product" : chance < .85 ? "square" : "cube"; }
     else { const types = Object.keys(pools[level]); template = types[Math.min(types.length-1,Math.floor(rng()*types.length))]; }
     const used = new Set(recent);
-    let available = pools[level][template].filter((q) => !used.has(q.tex));
-    if (!available.length) available = Object.values(pools[level]).flat().filter((q) => !used.has(q.tex));
-    if (!available.length) available = pools[level][template];
+    const selectedPool = signPool || pools[level][template];
+    let available = selectedPool.filter((q) => !used.has(q.tex));
+    if (!available.length && !signPool) available = Object.values(pools[level]).flat().filter((q) => !used.has(q.tex));
+    if (!available.length) available = selectedPool;
     const chosen = available[Math.min(available.length-1,Math.floor(rng()*available.length))];
     return { ...chosen, steps:[...chosen.steps], parameters:{...chosen.parameters} };
   }
