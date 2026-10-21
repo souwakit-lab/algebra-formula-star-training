@@ -12,6 +12,7 @@
   let player = null; let pendingAnswers = []; let pendingDamage = 0; let syncInFlight = false; let pendingBatch = null; let retryTimer; let nextTimer; let session = 0;
   let level = 1; let questionNumber = 0; let score = 0; let streak = 0; let levelXp = 0; let mistakes = 0; let total = 0; let correctCount = 0; let levelStats = emptyLevelStats(); let mistakeHistory = []; let selectedStatsLevel = "all"; let question; let entry = ""; let locked = true;
   const levels = core.LEVELS;
+  const characterRanks = ["", "初級魔法學徒", "星紋術士", "星海導師", "極光賢者", "星穹大法皇", "星穹大法皇"];
   const keyLayout = [
     ["7","8","9","a","b","c"], ["4","5","6","x","y","z"], ["1","2","3","m","n","p"], ["0","＋","−","×","分數","^"], ["(",")","⌫","清除","提交", ""]
   ];
@@ -124,6 +125,11 @@
   }
   function updateMeta() {
     const info = levels[level]; $("level-label").textContent = `LEVEL ${level}`; $("level-title").textContent = info.title;
+    const avatar = $("player-avatar");
+    const avatarSource = `hero-lv${Math.min(level, 5)}.webp`;
+    if (avatar.getAttribute("src") !== avatarSource) avatar.src = avatarSource;
+    avatar.alt = characterRanks[level];
+    avatar.nextElementSibling.textContent = characterRanks[level];
     $("question-type").textContent = info.title; $("mission-title").textContent = info.mission; $("mission-hint").textContent = info.hint;
     $("progress-copy").textContent = `${levelXp} / ${levelTotal} XP`; $("progress-bar").style.width = `${levelXp / levelTotal * 100}%`;
     $("progress-bar").parentElement.setAttribute("aria-valuenow", levelXp);
