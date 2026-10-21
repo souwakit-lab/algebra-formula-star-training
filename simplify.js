@@ -167,7 +167,7 @@
     }
     if (typeof Battle !== "undefined") {
       Battle.updateStatus({ combo:streak });
-      if (correct) Battle.randomCast(streak, 15);
+      if (correct) Battle.randomCast(streak, 15, answeredLevel);
       else Battle.enemyBreath();
     }
     $("score").textContent = score; $("streak").textContent = streak; updateMeta(); updateAnswer();
