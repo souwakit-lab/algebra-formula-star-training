@@ -439,7 +439,7 @@ function serializeAnswer(answer) {
 }
 
 function playBattleAnimation(correct) {
-  if (correct) Battle.randomCast(progress.streak, 45);
+  if (correct) Battle.randomCast(progress.streak, 45, question.level);
   else Battle.enemyBreath();
 }
 

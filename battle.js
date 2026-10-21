@@ -501,8 +501,9 @@ const Battle = (() => {
     }
   }
 
-  function randomCast(combo=0, damage=45) {
-    const art = arts[Math.floor(Math.random() * arts.length)];
+  function randomCast(combo=0, damage=45, level=3) {
+    const unlockedCount = Math.min(arts.length, Math.max(1, Math.floor(Number(level) || 1)) * 2);
+    const art = arts[Math.floor(Math.random() * unlockedCount)];
     cast(art, combo, damage);
   }
 
