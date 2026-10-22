@@ -141,8 +141,8 @@
         return;
       }
       const fraction = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mfrac");
-      const numerator = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mtext");
-      const denominator = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mtext");
+      const numerator = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mrow");
+      const denominator = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mrow");
       appendMathText(numerator, token.numerator);
       appendMathText(denominator, token.denominator);
       fraction.append(numerator, denominator);
