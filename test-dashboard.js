@@ -9,6 +9,11 @@ for (const file of ["dashboard.js","simplify-dashboard.js","nth-term-dashboard.j
     createElement(){let text="";return {set textContent(value){text=String(value);},get innerHTML(){return text.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}};}
   }});
   vm.runInContext(fs.readFileSync(file,"utf8"),sandbox);
+  if(file==="nth-term-dashboard.js") {
+    assert.equal(vm.runInContext('totalXp({level:5,xp:100})',sandbox),500);
+    assert.equal(vm.runInContext('normalizePlayerLevel({level:2,xp:140}).level',sandbox),3);
+    assert.equal(vm.runInContext('normalizePlayerLevel({level:2,xp:140}).xp',sandbox),40);
+  } else assert.equal(vm.runInContext('totalXp({level:5,xp:100})',sandbox),700);
   sandbox.sample={players:[
     {className:"SG1A",id:1,name:"測試甲",level:1,xp:15,total:20,correct:6,accuracy:.3,streak:1},
     {className:"SG1A",id:2,name:"測試乙",level:2,xp:15,total:10,correct:9,accuracy:.9,streak:3},

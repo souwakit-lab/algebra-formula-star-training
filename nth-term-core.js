@@ -79,8 +79,8 @@
     const protectedPenalty = !correct && next.mistakes>3; const xpChange = correct ? 15 : protectedPenalty ? 0 : -10;
     next.xp = Math.max(0,Number(next.xp || 0)+xpChange);
     let leveledUp=false,completed=false;
-    if(next.xp>=150) { if(next.level<5) {next.xp-=150;next.level++;leveledUp=true;} else {next.xp=150;completed=true;} }
+    if(next.xp>=100) { if(next.level<5) {next.xp-=100;next.level++;leveledUp=true;} else {next.xp=100;completed=true;} }
     return { progress:next,leveledUp,completed,xpChange,protectedPenalty,protectionActive:next.mistakes>=3 };
   }
-  return { ...base, LEVELS, LEVEL_XP:{1:150,2:150,3:150,4:150,5:150},getLevelXp:()=>150,generateQuestion,applyResult };
+  return { ...base, LEVELS, LEVEL_XP:{1:100,2:100,3:100,4:100,5:100},getLevelXp:()=>100,generateQuestion,applyResult };
 });

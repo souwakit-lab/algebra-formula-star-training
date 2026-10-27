@@ -2,6 +2,15 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 const core = require("./nth-term-core.js");
+assert.deepEqual(core.LEVEL_XP,{1:100,2:100,3:100,4:100,5:100});
+for(let level=1;level<=5;level++) {
+  assert.equal(core.getLevelXp(level),100);
+  const result=core.applyResult({level,xp:90,total:0,correct:0,streak:0,mistakes:0},true);
+  assert.equal(result.progress.level,Math.min(5,level+1));
+  assert.equal(result.progress.xp,level===5?100:5);
+  assert.equal(result.leveledUp,level<5);
+  assert.equal(result.completed,level===5);
+}
 
 for (let level=1;level<=5;level++) for(let i=0;i<2000;i++) {
   const q=core.generateQuestion(level);
@@ -31,6 +40,8 @@ const sandbox = vm.createContext({
 vm.runInContext(fs.readFileSync("battle.js", "utf8"), sandbox);
 // Skip initialization: exercise the real selection rendering without browser/network state.
 vm.runInContext(fs.readFileSync("nth-term.js", "utf8").replace(/\binit\(\);\s*$/, ""), sandbox);
+assert.equal(vm.runInContext('studentTotalXp({level:5,xp:100})',sandbox),500);
+assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(normalizeLevelProgress({level:2,xp:140,total:30}))',sandbox)),{level:3,xp:40,total:30});
 for (const level of [1,2,3,4,5]) {
   vm.runInContext(`progress.level=${level}; locked=false; renderSkills();`, sandbox);
   assert.equal(nodes["skill-list"].children.filter(b => !b.disabled).length, level * 2);

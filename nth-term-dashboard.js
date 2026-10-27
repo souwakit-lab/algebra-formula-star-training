@@ -85,11 +85,11 @@ function normalizePlayerLevel(raw) {
   const player = { ...raw };
   player.level = Math.min(5, Math.max(1, Number(player.level) || 1));
   player.xp = Math.max(0, Number(player.xp) || 0);
-  while (player.level < 5 && player.xp >= 150) {
-    player.xp -= 150;
+  while (player.level < 5 && player.xp >= 100) {
+    player.xp -= 100;
     player.level += 1;
   }
-  if (player.level === 5) player.xp = Math.min(player.xp, 150);
+  if (player.level === 5) player.xp = Math.min(player.xp, 100);
   return player;
 }
 
@@ -107,7 +107,7 @@ function renderTiers(players, levelStats) {
 }
 
 function totalXp(player) {
-  const completedLevelXp = [0, 0, 150, 300, 450, 600, 750];
+  const completedLevelXp = [0, 0, 100, 200, 300, 400];
   const level = Math.min(5, Math.max(1, Number(player.level) || 1));
   return completedLevelXp[level] + Number(player.xp || 0);
 }

@@ -538,7 +538,7 @@ function showLevelDialog(completed) {
   $("dialog-avatar").src = info.avatar;
   $("dialog-kicker").textContent = completed ? "MASTERED" : "LEVEL UP";
   $("dialog-title").textContent = completed ? "完成全部關卡" : `進入程度${["一", "二", "三", "四", "五", "六"][progress.level - 1]}`;
-  $("dialog-copy").textContent = completed ? "你已完成 750 XP 的通項公式訓練。" : `${info.title}已解鎖。`;
+  $("dialog-copy").textContent = completed ? "你已完成 500 XP 的通項公式訓練。" : `${info.title}已解鎖。`;
   $("continue-button").textContent = completed ? "繼續練習" : "開始下一關";
   $("level-dialog").showModal();
 }
@@ -619,7 +619,7 @@ async function getStudentExportData() {
 }
 
 function studentTotalXp(student) {
-  const completedLevelXp = [0, 0, 150, 300, 450, 600, 750];
+  const completedLevelXp = [0, 0, 100, 200, 300, 400];
   const level = Math.min(5, Math.max(1, Number(student.level) || 1));
   return completedLevelXp[level] + Number(student.xp || 0);
 }
