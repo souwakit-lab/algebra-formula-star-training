@@ -3,6 +3,12 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const core = require("./nth-term-core.js");
 
+for (let level=1;level<=5;level++) for(let i=0;i<2000;i++) {
+  const q=core.generateQuestion(level);
+  assert.ok(Number.isInteger(q.n) && q.n>=1 && q.n<=10);
+  assert.ok(Math.abs(q.answer.valueOf())<=100);
+}
+
 for (let i = 0; i < 2000; i++) {
   const q = core.generateQuestion(4);
   assert.equal(q.template, "constantDenominator");

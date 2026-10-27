@@ -28,7 +28,7 @@
       answer, answerTex, inputKind:"number",
       steps:[`求第 ${n} 項，把 n=${n} 代入通項公式。`, `T_{${n}}=${substitution}`, `T_{${n}}=${answerTex}`] });
   }
-  for (let n=1; n<=15; n++) {
+  for (let n=1; n<=10; n++) {
     for (let a=-9; a<=9; a++) {
       if (!a) continue;
       add(1,"multiple",`${coefficient(a)}n`,`${a}\\times${n}`,a*n,1,n,{a});
@@ -47,7 +47,7 @@
     }
   }
   // A finite pool per fixed template makes the answer bounds and repeat policy explicit.
-  for (let n=2;n<=12;n++) for (let a=-4;a<=4;a++) for (let b=-5;b<=5;b++) for (let c=1;c<=3;c++) for (let d=1;d<=4;d++) {
+  for (let n=2;n<=10;n++) for (let a=-4;a<=4;a++) for (let b=-5;b<=5;b++) for (let c=1;c<=3;c++) for (let d=1;d<=4;d++) {
     if (!a || !b || a*d === b*c) continue;
     add(5,"linearRatio",`\\frac{${linear(a,b)}}{${linear(c,d)}}`,`\\frac{${a}\\times${n}${constant(b)}}{${c}\\times${n}+${d}}`,a*n+b,c*n+d,n,{a,b,c,d});
   }

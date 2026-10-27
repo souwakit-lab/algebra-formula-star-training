@@ -2,7 +2,7 @@
 const Battle = (() => {
   const timings = Object.freeze({ normal:4600, ultimate:4800 });
   const arts = [
-    { key:"tide", icon:"💧", name:"潮汐裂斬", tag:"TIDEBREAK", color:"#70e9ff" },
+    { key:"tide", icon:"🌙", name:"潮汐裂斬", tag:"TIDEBREAK", color:"#70e9ff" },
     { key:"heart", icon:"💗", name:"心光綻放", tag:"HEART BLOOM", color:"#ff91c5" },
     { key:"music", icon:"🎵", name:"星弦共鳴", tag:"STARSTRING RESONANCE", color:"#f6d58a" },
     { key:"leaf", icon:"🍃", name:"翠葉旋舞", tag:"VERDANT SPIRAL", color:"#9deb8c" },
@@ -458,23 +458,44 @@ const Battle = (() => {
     }
   }
 
+  function crescent(x,y,size,alpha,rotation=0) {
+    ctx.save();ctx.translate(x,y);ctx.rotate(rotation);
+    ctx.globalAlpha=Math.max(0,Math.min(1,alpha));
+    const gradient=ctx.createLinearGradient(0,0,size,0);
+    gradient.addColorStop(0,"#e6fcff");gradient.addColorStop(.55,"#8eefff");gradient.addColorStop(1,"#459bfa");
+    ctx.fillStyle=gradient;ctx.strokeStyle="#bcf7ff";ctx.lineWidth=.8;
+    ctx.shadowColor="#70dfff";ctx.shadowBlur=7;
+    ctx.beginPath();ctx.moveTo(0,-size);
+    ctx.bezierCurveTo(size*1.3,-size*.85,size*1.3,size*.85,0,size);
+    ctx.bezierCurveTo(size*.58,size*.48,size*.58,-size*.48,0,-size);
+    ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+  }
+
   function drawClassicUpgrade(art, source, target, t, scale) {
     const clamp = (n) => Math.max(0,Math.min(1,n));
     const fade = 1-clamp((t-.86)/.14);
     const dx=target.x-source.x, dy=target.y-source.y;
     if (art.key === "tide") {
-      // Three water blades spread from the caster, then cross at the dragon.
+      // Three slim crescent blades leave the hero in staggered, gently fanning flights.
       for(let i=0;i<3;i++) {
-        const q=clamp((t-.13-i*.065)/.4);
+        const q=clamp((t-.12-i*.085)/.35);
         if(q<=0 || q>=1) continue;
-        const x=source.x+dx*q,y=source.y+dy*q+Math.sin(q*Math.PI)*(i-1)*100*scale;
-        arcTrail(x-45*scale,y+30*scale,x+30*scale,y-35*scale,(i-1)*20*scale,art.color,12*scale,fade);
-        for(let j=0;j<5;j++) droplet(x-j*9*scale,y+Math.sin(j+t*15)*10*scale,6*scale,"#c7f8ff",fade*(1-j/6),t*5);
+        for(let j=3;j>=0;j--) {
+          const trail=clamp(q-j*.018),x=source.x+dx*trail,y=source.y+dy*trail+Math.sin(trail*Math.PI)*(i-1)*45*scale;
+          crescent(x,y,(25+i*3)*scale,j===0?.9:.12,Math.sin(trail*Math.PI)*.6+(i-1)*.2);
+        }
       }
-      if(t>.55) {
-        const q=clamp((t-.55)/.3);
-        for(const side of [-1,1]) arcTrail(target.x-100*scale,target.y+side*80*scale,target.x+100*scale,target.y-side*80*scale,side*45*scale,art.color,18*scale,Math.sin(q*Math.PI));
-        for(let i=0;i<24;i++) {const a=i*2.399,r=(20+q*140)*scale;droplet(target.x+Math.cos(a)*r,target.y+Math.sin(a)*r*.65,8*scale,art.color,fade, a);}
+      if(t>.47 && t<.94) {
+        for(let i=0;i<3;i++) {
+          const q=clamp((t-.47-i*.075)/.22);
+          if(q<=0 || q>=1) continue;
+          const angle=-1.8+q*2.6+i*1.7;
+          crescent(target.x+Math.cos(angle)*55*scale,target.y+Math.sin(angle)*45*scale,(30+i*4)*scale,Math.sin(q*Math.PI)*fade,angle+Math.PI/2);
+        }
+        if(t>.7) for(let i=0;i<14;i++) {
+          const q=clamp((t-.7)/.25),a=i*2.399,r=(25+q*65)*scale;
+          glow(target.x+Math.cos(a)*r,target.y+Math.sin(a)*r*.6,2*scale,"#bdf7ff",(1-q)*.7);
+        }
       }
     } else if(art.key === "music") {
       // A five-line score unfurls directly from the hero and carries a chord.
@@ -580,6 +601,11 @@ const Battle = (() => {
       return;
     }
 
+    if (art.key === "tide") {
+      drawClassicUpgrade(art,source,target,t,scale);
+      return;
+    }
+
     if (t > launchStart && t < launchEnd) {
       const q = clamp((t - launchStart) / (launchEnd - launchStart));
       const px = source.x + dx * q;
@@ -595,8 +621,7 @@ const Battle = (() => {
           const gx = source.x + dx * ghost;
           const gy = source.y + dy * ghost - Math.sin(ghost * Math.PI) * 28 * scale + Math.sin(index * 2.4 + t * 10) * 6 * scale;
           const alpha = (1 - index / 16) * .8;
-          if (art.key === "tide") droplet(gx, gy, (5 + index % 3) * scale, art.color, alpha, ghost);
-          else if (art.key === "core") rock(gx, gy, (7 + index % 3 * 2) * scale, "#ff8a3d", alpha, ghost * 7, index);
+          if (art.key === "core") rock(gx, gy, (7 + index % 3 * 2) * scale, "#ff8a3d", alpha, ghost * 7, index);
           else if (art.key === "abyss") rune(gx, gy, (7 + index % 3 * 2) * scale, art.color, alpha, index * .7);
           else if (art.key === "music") note(gx, gy, (7 + index % 3 * 2) * scale, art.color, alpha, (index % 2 - .5) * .35);
           else sword(gx, gy, (20 + index % 3 * 5) * scale, art.color, alpha, index * .55);
@@ -604,23 +629,7 @@ const Battle = (() => {
       }
     }
 
-    if (art.key === "tide") {
-      if (t > .15 && t < .72) {
-        const q = clamp((t - .15) / .57);
-        const px = source.x + dx * q;
-        const py = source.y + dy * q - Math.sin(q * Math.PI) * 18 * scale;
-        const alpha = Math.sin(Math.min(1, (t - .15) / .2) * Math.PI);
-        iceberg(px, py, 27 * scale, art.color, alpha);
-        for (let index = 0; index < 9; index += 1) droplet(px + (index - 4) * 13 * scale, py + Math.sin(index + t * 6) * 13 * scale, (6 + index % 3 * 2) * scale, art.color, alpha * .65, index * .4);
-      }
-      if (t > .22 && t < .75) {
-        for (let index = 0; index < 12; index += 1) {
-          const angle = index * 2.399 + t * 7;
-          const radius = 82 * scale * (1 - clamp((t - .5) / .25));
-          droplet(target.x + Math.cos(angle) * radius, target.y + Math.sin(angle) * radius * .65, (8 + index % 3 * 2) * scale, art.color, fade * .82, angle);
-        }
-      }
-    } else if (art.key === "core") {
+    if (art.key === "core") {
       if (t > .12 && t < .55) {
         const q = clamp((t - .12) / .34);
         const mx = source.x + dx * q;
