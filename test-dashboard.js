@@ -13,6 +13,8 @@ for (const file of ["dashboard.js","simplify-dashboard.js","nth-term-dashboard.j
     assert.equal(vm.runInContext('totalXp({level:5,xp:100})',sandbox),500);
     assert.equal(vm.runInContext('normalizePlayerLevel({level:2,xp:140}).level',sandbox),3);
     assert.equal(vm.runInContext('normalizePlayerLevel({level:2,xp:140}).xp',sandbox),40);
+    const row=vm.runInContext('buildStudentSummaryRows({players:[{className:"SG1A",id:1,name:"測試",level:2,xp:140}],answers:[]})[1]',sandbox);
+    assert.deepEqual(Array.from(row).slice(3,6),[3,40,240]);
   } else assert.equal(vm.runInContext('totalXp({level:5,xp:100})',sandbox),700);
   sandbox.sample={players:[
     {className:"SG1A",id:1,name:"測試甲",level:1,xp:15,total:20,correct:6,accuracy:.3,streak:1},

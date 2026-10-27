@@ -184,7 +184,7 @@ async function downloadData() {
 }
 
 function buildStudentSummaryRows(data) {
-  const students = new Map((data.players || []).map((player) => [`${player.className}:${player.id}`, { ...player }]));
+  const students = new Map((data.players || []).map((player) => [`${player.className}:${player.id}`, normalizePlayerLevel(player)]));
   const perLevel = new Map();
   (data.answers || []).forEach((answer) => {
     const key = `${answer.className}:${answer.id}`;
