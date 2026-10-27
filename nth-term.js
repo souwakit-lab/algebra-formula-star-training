@@ -17,6 +17,7 @@ let question;
 let entry = "";
 let selectedChoice = "";
 let locked = false;
+let selectedSkill = "tide";
 let questionNumber = 0;
 let pendingAnswers = [];
 let pendingDamage = 0;
@@ -102,6 +103,12 @@ function init() {
   populateLogin();
   if (!API_URL) $("sync-status").textContent = "本機練習";
   Battle.init();
+  $("skill-list").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-skill]");
+    if (locked || !button || button.disabled) return;
+    selectedSkill = button.dataset.skill;
+    renderSkills();
+  });
   $("class-select").addEventListener("change", () => { updateIdOptions(); updateStudentPreview(); });
   $("id-select").addEventListener("change", updateStudentPreview);
   $("login-button").addEventListener("click", login);
@@ -223,6 +230,7 @@ function nextQuestion() {
   const recent = recentQuestionKeys[progress.level] || [];
   const candidate = core.generateQuestion(progress.level, Math.random, recent);
   question = candidate;
+  renderSkills();
   recent.push(questionKey(question));
   // Keep a question bag larger than every current level's fixed item pool.
   // This prevents the same item returning until the available items have
@@ -439,16 +447,18 @@ function serializeAnswer(answer) {
 }
 
 function playBattleAnimation(correct) {
-  if (correct) Battle.randomCast(progress.streak, 45, question.level);
+  if (correct) Battle.castSkill(selectedSkill, progress.streak, 45, question.level);
   else Battle.enemyBreath();
 }
 
 function setKeypadDisabled(disabled) {
+  renderSkills();
   $("keypad").querySelectorAll("button").forEach((button) => { button.disabled = disabled; });
   $("choice-answer").querySelectorAll("button").forEach((button) => { button.disabled = disabled; });
 }
 
 function updateProgressUI() {
+  renderSkills();
   const info = levelInfo[progress.level];
   const targetXp = core.getLevelXp(progress.level);
   $("level-kicker").textContent = `LEVEL ${progress.level}`;
@@ -478,6 +488,25 @@ function updateProgressUI() {
     if (icon) icon.setAttribute("data-lucide", level <= progress.level ? "check" : "lock-keyhole");
   });
   if (window.lucide) lucide.createIcons();
+}
+
+function renderSkills() {
+  const skills = Battle.getSkills(locked && question ? question.level : progress.level);
+  if (!skills.some((skill) => skill.key === selectedSkill && skill.unlocked)) selectedSkill = skills[0].key;
+  $("skill-list").replaceChildren(...skills.map((skill) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.skill = skill.key;
+    button.className = "skill-button";
+    button.classList.toggle("selected", skill.key === selectedSkill);
+    button.classList.toggle("skill-locked", !skill.unlocked);
+    button.disabled = locked || !skill.unlocked;
+    button.setAttribute("aria-pressed", String(skill.key === selectedSkill));
+    button.title = skill.unlocked ? "答題前選擇，答對後施放" : `第 ${skill.unlockLevel} 級解鎖`;
+    button.textContent = `${skill.unlocked ? "" : "🔒 "}${skill.name}`;
+    button.style.setProperty("--skill-color", skill.color);
+    return button;
+  }));
 }
 
 function renderStudentStats() {

@@ -501,9 +501,21 @@ const Battle = (() => {
     }
   }
 
-  function randomCast(combo=0, damage=45, level=3) {
+  function getSkills(level=1) {
     const unlockedCount = Math.min(arts.length, Math.max(1, Math.floor(Number(level) || 1)) * 2);
-    const art = arts[Math.floor(Math.random() * unlockedCount)];
+    return arts.map((art, index) => ({ ...art, unlocked:index < unlockedCount, unlockLevel:Math.floor(index / 2) + 1 }));
+  }
+
+  function castSkill(key, combo=0, damage=45, level=1) {
+    const art = getSkills(level).find((skill) => skill.key === key && skill.unlocked);
+    if (!art) return false;
+    cast(art, combo, damage);
+    return true;
+  }
+
+  function randomCast(combo=0, damage=45, level=3) {
+    const unlocked = getSkills(level).filter((art) => art.unlocked);
+    const art = unlocked[Math.floor(Math.random() * unlocked.length)];
     cast(art, combo, damage);
   }
 
@@ -618,5 +630,5 @@ const Battle = (() => {
     timer = setTimeout(cancel, duration + 120);
   }
 
-  return { init, cancel, updateStatus, randomCast, enemyBreath, timings };
+  return { init, cancel, updateStatus, randomCast, castSkill, getSkills, enemyBreath, timings };
 })();

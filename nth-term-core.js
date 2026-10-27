@@ -9,13 +9,13 @@
     1:{ title:"直接倍數代入", rank:"初級魔法學徒", mission:"把指定的 n 代入通項公式", hint:"求第幾項，就把 n 換成幾。", avatar:"hero-lv1.webp" },
     2:{ title:"一次式代入", rank:"星紋術士", mission:"代入後先乘除、後加減", hint:"注意負係數和常數的正負號。", avatar:"hero-lv2.webp" },
     3:{ title:"乘方與乘積", rank:"星海導師", mission:"計算平方、立方及乘積", hint:"先算括號和乘方，再完成乘法。", avatar:"hero-lv3.webp" },
-    4:{ title:"常數分子的分式", rank:"極光賢者", mission:"先算分母，再化成最簡分數", hint:"分母為負數時，把負號寫在整個分數前。", avatar:"hero-lv4.webp" },
+    4:{ title:"常數分母的分式", rank:"極光賢者", mission:"先算分子，再化成最簡分數", hint:"把 n 代入分子，完成加減後再約分。", avatar:"hero-lv4.webp" },
     5:{ title:"分子、分母都含 n", rank:"星穹大法皇", mission:"分別計算分子和分母，再約分", hint:"分子和分母都要把 n 換成指定的數。", avatar:"hero-lv5.webp" },
   };
   const coefficient = (a) => a === 1 ? "" : a === -1 ? "-" : String(a);
   const constant = (b) => b < 0 ? String(b) : `+${b}`;
   const linear = (a,b) => `${coefficient(a)}n${b ? constant(b) : ""}`;
-  const pools = { 1:{multiple:[]}, 2:{linear:[],subtract:[]}, 3:{product:[],square:[],cube:[]}, 4:{reciprocal:[],negativeDenominator:[]}, 5:{ratio:[],linearRatio:[]} };
+  const pools = { 1:{multiple:[]}, 2:{linear:[],subtract:[]}, 3:{product:[],square:[],cube:[]}, 4:{constantDenominator:[]}, 5:{ratio:[],linearRatio:[]} };
   function add(level, template, formula, substitution, numerator, denominator, n, parameters = {}) {
     if (!denominator) return;
     const answer = new Fraction(numerator, denominator);
@@ -42,9 +42,8 @@
     if (n<=10) add(3,"square","n^2",`${n}\\times${n}`,n*n,1,n);
     if (n<=4) add(3,"cube","n^3",`${n}\\times${n}\\times${n}`,n*n*n,1,n);
     for (let a=1;a<=9;a++) for (let b=1;b<=9;b++) {
-      add(4,"reciprocal",`\\frac{${a}}{n+${b}}`,`\\frac{${a}}{${n}+${b}}`,a,n+b,n,{a,b});
+      if (a >= 2) for (const offset of [b, -b]) add(4,"constantDenominator",`\\frac{n${constant(offset)}}{${a}}`,`\\frac{${n}${constant(offset)}}{${a}}`,n+offset,a,n,{a,b:offset});
       add(5,"ratio",`\\frac{n-${a}}{n+${b}}`,`\\frac{${n}-${a}}{${n}+${b}}`,n-a,n+b,n,{a,b});
-      for (let c=1;c<=5;c++) add(4,"negativeDenominator",`\\frac{${a}}{${b}-${coefficient(c)}n}`,`\\frac{${a}}{${b}-${c}\\times${n}}`,a,b-c*n,n,{a,b,c});
     }
   }
   // A finite pool per fixed template makes the answer bounds and repeat policy explicit.

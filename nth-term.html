@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#111827">
   <title>通項公式星術訓練</title>
   <link rel="stylesheet" href="styles.css?v=20261020g">
-  <link rel="stylesheet" href="nth-term.css?v=20261021b">
+  <link rel="stylesheet" href="nth-term.css?v=20261027a">
   <link rel="stylesheet" href="battle-ui.css?v=20261020c">
   <script async id="lucide-script" src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script defer src="vendor/fraction.min.js"></script>
   <script defer src="nth-term-math.js?v=20261022a"></script>
   <script defer src="game-core.js?v=20261020l"></script>
-  <script defer src="nth-term-core.js?v=20261021c"></script>
+  <script defer src="nth-term-core.js?v=20261027a"></script>
   <script defer src="config.js?v=20261021-nth"></script>
-  <script defer src="battle.js?v=20261021a"></script>
-  <script defer src="nth-term.js?v=20261021c"></script>
+  <script defer src="battle.js?v=20261027a"></script>
+  <script defer src="nth-term.js?v=20261027a"></script>
 </head>
 <body>
   <section id="login-screen" class="login-screen">
@@ -92,6 +92,11 @@
         <span data-level-dot="4">4</span>
         <span data-level-dot="5">5</span>
       </div>
+    </section>
+
+    <section class="skill-strip" aria-label="答題前選擇技能">
+      <span class="skill-label">選擇技能<small>答對後施放</small></span>
+      <div id="skill-list" class="skill-list" role="group" aria-label="技能"></div>
     </section>
 
     <div class="workspace">
@@ -174,7 +179,7 @@
           </li>
           <li data-level-card="4">
             <span>04</span>
-            <div><strong>常數分子的分式</strong><small>由通項公式求指定的一項</small></div>
+            <div><strong>常數分母的分式</strong><small>先算分子，再約分</small></div>
             <i data-lucide="lock-keyhole"></i>
           </li>
           <li data-level-card="5">
