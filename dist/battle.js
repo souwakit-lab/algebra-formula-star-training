@@ -3,15 +3,15 @@ const Battle = (() => {
   const timings = Object.freeze({ normal:4600, ultimate:4800 });
   const arts = [
     { key:"tide", icon:"💧", name:"潮汐裂斬", tag:"TIDEBREAK", color:"#70e9ff" },
-    { key:"core", icon:"☄️", name:"熔核天墜", tag:"CORE FALL", color:"#ff8b54" },
-    { key:"aether", icon:"⚡", name:"蒼穹導束", tag:"AETHER LANCE", color:"#8dffce" },
-    { key:"abyss", icon:"🌀", name:"深淵絞界", tag:"ABYSSAL MAELSTROM", color:"#bc9aff" },
-    { key:"music", icon:"🎵", name:"星弦共鳴", tag:"STARSTRING RESONANCE", color:"#f6d58a" },
-    { key:"ultimate", icon:"⚔️", name:"星劍天降", tag:"ASTRAL SWORD RAIN", color:"#e5ceff" },
     { key:"heart", icon:"💗", name:"心光綻放", tag:"HEART BLOOM", color:"#ff91c5" },
+    { key:"music", icon:"🎵", name:"星弦共鳴", tag:"STARSTRING RESONANCE", color:"#f6d58a" },
     { key:"leaf", icon:"🍃", name:"翠葉旋舞", tag:"VERDANT SPIRAL", color:"#9deb8c" },
-    { key:"snow", icon:"❄️", name:"霜雪星旋", tag:"FROST NOVA", color:"#b6efff" },
     { key:"butterfly", icon:"🦋", name:"幻蝶流光", tag:"PRISM BUTTERFLIES", color:"#dcabff" },
+    { key:"snow", icon:"❄️", name:"霜雪星旋", tag:"FROST NOVA", color:"#b6efff" },
+    { key:"abyss", icon:"🌀", name:"深淵絞界", tag:"ABYSSAL MAELSTROM", color:"#bc9aff" },
+    { key:"ultimate", icon:"⚔️", name:"星劍天降", tag:"ASTRAL SWORD RAIN", color:"#e5ceff" },
+    { key:"aether", icon:"⚡", name:"蒼穹導束", tag:"AETHER LANCE", color:"#8dffce" },
+    { key:"core", icon:"☄️", name:"熔核天墜", tag:"CORE FALL", color:"#ff8b54" },
   ];
   let layer;
   let canvas;
@@ -458,6 +458,99 @@ const Battle = (() => {
     }
   }
 
+  function drawClassicUpgrade(art, source, target, t, scale) {
+    const clamp = (n) => Math.max(0,Math.min(1,n));
+    const fade = 1-clamp((t-.86)/.14);
+    const dx=target.x-source.x, dy=target.y-source.y;
+    if (art.key === "tide") {
+      // Three water blades spread from the caster, then cross at the dragon.
+      for(let i=0;i<3;i++) {
+        const q=clamp((t-.13-i*.065)/.4);
+        if(q<=0 || q>=1) continue;
+        const x=source.x+dx*q,y=source.y+dy*q+Math.sin(q*Math.PI)*(i-1)*100*scale;
+        arcTrail(x-45*scale,y+30*scale,x+30*scale,y-35*scale,(i-1)*20*scale,art.color,12*scale,fade);
+        for(let j=0;j<5;j++) droplet(x-j*9*scale,y+Math.sin(j+t*15)*10*scale,6*scale,"#c7f8ff",fade*(1-j/6),t*5);
+      }
+      if(t>.55) {
+        const q=clamp((t-.55)/.3);
+        for(const side of [-1,1]) arcTrail(target.x-100*scale,target.y+side*80*scale,target.x+100*scale,target.y-side*80*scale,side*45*scale,art.color,18*scale,Math.sin(q*Math.PI));
+        for(let i=0;i<24;i++) {const a=i*2.399,r=(20+q*140)*scale;droplet(target.x+Math.cos(a)*r,target.y+Math.sin(a)*r*.65,8*scale,art.color,fade, a);}
+      }
+    } else if(art.key === "music") {
+      // A five-line score unfurls directly from the hero and carries a chord.
+      const reach=clamp((t-.1)/.4);
+      if(t>.1 && t<.84) for(let line=0;line<5;line++) {
+        const points=[];
+        for(let j=0;j<=30;j++) {const q=j/30*reach;points.push([source.x+dx*q,source.y+dy*q+Math.sin(q*Math.PI)*(line-2)*20*scale+Math.sin(q*12-t*10)*8*scale]);}
+        stroke(points,art.color,1.4*scale,fade*.55);
+      }
+      if(t>.2 && t<.8) for(let i=0;i<20;i++) {
+        const q=clamp((t-.2-i*.009)/.36);
+        if(q<=0 || q>=1) continue;
+        note(source.x+dx*q,source.y+dy*q+Math.sin(q*Math.PI)*(i%5-2)*23*scale,12*scale,i%2?art.color:"#b2f5ff",fade,Math.sin(t*8+i)*.3);
+      }
+      if(t>.55) for(let i=0;i<5;i++) {const q=clamp((t-.55-i*.03)/.3);ring(target.x,target.y,(15+q*180)*scale,art.color,(1-q)*fade,t*3+i);}
+    } else if(art.key === "aether") {
+      // Six braided energy streams charge into a broad finishing lance.
+      if(t>.12 && t<.7) for(let beam=0;beam<6;beam++) {
+        const reach=clamp((t-.12-beam*.018)/.32),points=[];
+        for(let j=0;j<=36;j++) {const q=j/36*reach;points.push([source.x+dx*q,source.y+dy*q+Math.sin(q*Math.PI)*Math.sin(q*10-t*13+beam*Math.PI/3)*50*scale]);}
+        stroke(points,beam%2?art.color:"#e6fff5",(beam%2?3:1.5)*scale,fade*.75);
+      }
+      if(t>.58 && t<.94) {
+        const alpha=Math.sin(clamp((t-.58)/.36)*Math.PI);
+        arcTrail(source.x,source.y,target.x+65*scale,target.y,0,art.color,70*scale,alpha*.22);
+        arcTrail(source.x,source.y,target.x+65*scale,target.y,0,art.color,16*scale,alpha);
+        arcTrail(source.x,source.y,target.x+65*scale,target.y,0,"#ffffff",4*scale,alpha);
+        ring(target.x,target.y,95*scale,art.color,alpha,t*6);
+      }
+    } else if(art.key === "core") {
+      // Meteor fragments lift out of the hero's charge, then rain down in waves.
+      for(let i=0;i<9;i++) {
+        const q=clamp((t-.12-i*.024)/.42);
+        if(q<=0 || q>=1) continue;
+        const x=source.x+(dx+(i%3-1)*55*scale)*q;
+        const y=source.y+dy*q-Math.sin(q*Math.PI)*(150+i%3*25)*scale;
+        glow(x-8*scale,y-15*scale,25*scale,art.color,.5*fade);
+        rock(x,y,(13+i%3*3)*scale,i%2?"#ffd37d":art.color,fade,t*12+i,i);
+      }
+      if(t>.55) for(let i=0;i<4;i++) {const q=clamp((t-.55-i*.045)/.25);ring(target.x,target.y+25*scale,(20+q*180)*scale,i%2?"#ffe0a1":art.color,(1-q)*fade,t*3);}
+    } else if(art.key === "abyss") {
+      // Rune chains are physically cast from the hero before the vortex forms.
+      if(t>.12 && t<.72) for(let chain=0;chain<4;chain++) {
+        const reach=clamp((t-.12-chain*.025)/.4);
+        const points=[];
+        for(let j=0;j<=28;j++) {
+          const q=j/28*reach;
+          const x=source.x+dx*q,y=source.y+dy*q+Math.sin(q*Math.PI)*Math.sin(q*8-t*8+chain*Math.PI/2)*75*scale;
+          points.push([x,y]);if(j%3===0)rune(x,y,7*scale,art.color,fade,t*4+j);
+        }
+        stroke(points,art.color,2*scale,fade*.65);
+      }
+      if(t>.55) for(let i=0;i<36;i++) {
+        const q=clamp((t-.55)/.4),a=i*2.399+q*8,r=(1-q)*(95+i%4*18)*scale;
+        rune(target.x+Math.cos(a)*r,target.y+Math.sin(a)*r*.7,8*scale,art.color,fade,a);
+      }
+    } else if(art.key === "ultimate") {
+      // Blades rise from the hero into the sky, then plunge vertically.
+      for(let i=0;i<15;i++) {
+        const q=clamp((t-.1-i*.01)/.3);
+        if(q>0 && q<1) sword(source.x+dx*q+(i-7)*8*scale*q,source.y+dy*q-Math.sin(q*Math.PI/2)*190*scale,34*scale,art.color,fade,Math.PI);
+        const drop=clamp((t-.42-i*.014)/.22);
+        if(drop>0 && drop<1) {
+          const x=target.x+(i-7)*15*scale,y=target.y-200*scale+drop*230*scale;
+          stroke([[x,y-65*scale],[x,y]],art.color,3*scale,fade*.6);
+          sword(x,y,48*scale,i%3?art.color:"#fff5ff",fade,Math.PI);
+        }
+      }
+      if(t>.77) {
+        const drop=clamp((t-.77)/.13);
+        sword(target.x,target.y-230*scale+drop*230*scale,130*scale,"#fff2ff",fade,Math.PI);
+        if(drop>.8) ring(target.x,target.y,(30+clamp((t-.87)/.13)*190)*scale,art.color,fade,t);
+      }
+    }
+  }
+
   function drawArt(art, source, target, t, particles) {
     const clamp = (value) => Math.max(0, Math.min(1, value));
     const dx = target.x - source.x;
@@ -617,6 +710,8 @@ const Battle = (() => {
       }
     }
 
+    drawClassicUpgrade(art,source,target,t,scale);
+
     if (t > impact) {
       const age = clamp((t - impact) / (1 - impact));
       glow(target.x, target.y, 135 * scale, art.color, (1 - age) * .25);
@@ -643,7 +738,8 @@ const Battle = (() => {
 
   function randomCast(combo=0, damage=45, level=3) {
     // Other games retain their existing six-skill random repertoire.
-    const unlocked = getSkills(level).slice(0,6).filter((art) => art.unlocked);
+    const legacyOrder = ["tide","core","aether","abyss","music","ultimate"];
+    const unlocked = legacyOrder.slice(0,Math.min(6,Math.max(1,Math.floor(Number(level)||1))*2)).map((key) => arts.find((art) => art.key === key));
     const art = unlocked[Math.floor(Math.random() * unlocked.length)];
     cast(art, combo, damage);
   }
