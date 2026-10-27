@@ -28,7 +28,7 @@ for (const file of ["dashboard.js","simplify-dashboard.js","nth-term-dashboard.j
 for (const html of ["dashboard.html","simplify-dashboard.html","nth-term-dashboard.html"]) {
   const source=fs.readFileSync(html,"utf8");
   assert.ok(source.includes('id="correct-list"'));
-  assert.ok(source.includes("dashboard-focus.js?v=20261027a"));
-  assert.ok(source.includes("dashboard-focus.css?v=20261027a"));
+  assert.ok(source.includes("dashboard-focus.js?v=20261027b"));
+  assert.ok(source.includes("dashboard-focus.css?v=20261027b"));
 }
 console.log("PASS: all three dashboards: correct-answer ranking, ties, escaped names, tier counts, empty data, modal assets.");
