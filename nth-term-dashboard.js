@@ -77,6 +77,7 @@ function renderDashboard(data) {
   renderRanking("xp-list", [...players].sort((a,b) => totalXp(b) - totalXp(a)), (player) => totalXp(player));
   renderRanking("streak-list", [...players].sort((a,b) => b.streak - a.streak), (player) => player.streak);
   renderRanking("accuracy-list", players.filter((player) => player.total >= 3).sort((a,b) => b.accuracy - a.accuracy || b.total - a.total), (player) => `${Math.round(player.accuracy * 100)}%`);
+  renderRanking("correct-list", [...players].sort((a,b) => Number(b.correct || 0) - Number(a.correct || 0) || b.accuracy - a.accuracy), (player) => `${Number(player.correct || 0)} 題`);
   renderWarnings(players);
 }
 
