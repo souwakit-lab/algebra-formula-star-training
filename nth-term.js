@@ -334,6 +334,7 @@ function renderEntry() {
   const display = $("answer-display");
   const tex = entryToTex();
   display.classList.toggle("empty", !tex);
+  display.classList.toggle("has-fraction", entry.includes("/"));
   if (!tex) display.innerHTML = '<span class="answer-placeholder">?</span>';
   else renderMath(display, tex);
   $("submit-answer").disabled = !core.parseAnswer(entry) || locked || (question?.inputKind === "formula-number" && !selectedChoice);
@@ -503,7 +504,14 @@ function renderSkills() {
     button.disabled = locked || !skill.unlocked;
     button.setAttribute("aria-pressed", String(skill.key === selectedSkill));
     button.title = skill.unlocked ? "答題前選擇，答對後施放" : `第 ${skill.unlockLevel} 級解鎖`;
-    button.textContent = `${skill.unlocked ? "" : "🔒 "}${skill.name}`;
+    const icon = document.createElement("span");
+    icon.className = "skill-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = skill.icon;
+    const label = document.createElement("span");
+    label.textContent = skill.name;
+    button.replaceChildren(icon, label);
+    button.setAttribute("aria-label", `${skill.name}${skill.unlocked ? "" : `，第 ${skill.unlockLevel} 級解鎖`}`);
     button.style.setProperty("--skill-color", skill.color);
     return button;
   }));

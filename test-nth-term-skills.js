@@ -27,7 +27,9 @@ vm.runInContext(fs.readFileSync("battle.js", "utf8"), sandbox);
 vm.runInContext(fs.readFileSync("nth-term.js", "utf8").replace(/\binit\(\);\s*$/, ""), sandbox);
 for (const level of [1,2,3,4,5]) {
   vm.runInContext(`progress.level=${level}; locked=false; renderSkills();`, sandbox);
-  assert.equal(nodes["skill-list"].children.filter(b => !b.disabled).length, Math.min(6, level * 2));
+  assert.equal(nodes["skill-list"].children.filter(b => !b.disabled).length, level * 2);
+  assert.equal(nodes["skill-list"].children.length, 10);
+  assert.ok(nodes["skill-list"].children.every(b => b.children[0].textContent));
 }
 vm.runInContext('progress.level=2; selectedSkill="abyss"; renderSkills();', sandbox);
 assert.equal(nodes["skill-list"].children.find(b => b.attributes["aria-pressed"] === "true").dataset.skill, "abyss");
@@ -41,4 +43,4 @@ assert.equal(vm.runInContext('Battle.castSkill("unknown",0,45,5)', sandbox), fal
 vm.runInContext('Battle.castSkill=(...args)=>window.lastCast=args; playBattleAnimation(true);', sandbox);
 assert.deepEqual(Array.from(sandbox.window.lastCast), ["core",0,45,1]);
 assert.equal(fs.readFileSync("battle.js","utf8"), fs.readFileSync("dist/battle.js","utf8"));
-console.log("PASS: Lv.4 arithmetic; skills 2/4/6; selection; locked answers; level-up boundary; chosen attack; dist parity.");
+console.log("PASS: Lv.4 arithmetic; skills 2/4/6/8/10 with icons; selection; locked answers; level-up boundary; chosen attack; dist parity.");

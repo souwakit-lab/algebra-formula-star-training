@@ -2,12 +2,16 @@
 const Battle = (() => {
   const timings = Object.freeze({ normal:4600, ultimate:4800 });
   const arts = [
-    { key:"tide", name:"潮汐裂斬", tag:"TIDEBREAK", color:"#70e9ff" },
-    { key:"core", name:"熔核天墜", tag:"CORE FALL", color:"#ff8b54" },
-    { key:"aether", name:"蒼穹導束", tag:"AETHER LANCE", color:"#8dffce" },
-    { key:"abyss", name:"深淵絞界", tag:"ABYSSAL MAELSTROM", color:"#bc9aff" },
-    { key:"music", name:"星弦共鳴", tag:"STARSTRING RESONANCE", color:"#f6d58a" },
-    { key:"ultimate", name:"星劍天降", tag:"ASTRAL SWORD RAIN", color:"#e5ceff" },
+    { key:"tide", icon:"💧", name:"潮汐裂斬", tag:"TIDEBREAK", color:"#70e9ff" },
+    { key:"core", icon:"☄️", name:"熔核天墜", tag:"CORE FALL", color:"#ff8b54" },
+    { key:"aether", icon:"⚡", name:"蒼穹導束", tag:"AETHER LANCE", color:"#8dffce" },
+    { key:"abyss", icon:"🌀", name:"深淵絞界", tag:"ABYSSAL MAELSTROM", color:"#bc9aff" },
+    { key:"music", icon:"🎵", name:"星弦共鳴", tag:"STARSTRING RESONANCE", color:"#f6d58a" },
+    { key:"ultimate", icon:"⚔️", name:"星劍天降", tag:"ASTRAL SWORD RAIN", color:"#e5ceff" },
+    { key:"heart", icon:"💗", name:"心光綻放", tag:"HEART BLOOM", color:"#ff91c5" },
+    { key:"leaf", icon:"🍃", name:"翠葉旋舞", tag:"VERDANT SPIRAL", color:"#9deb8c" },
+    { key:"snow", icon:"❄️", name:"霜雪星旋", tag:"FROST NOVA", color:"#b6efff" },
+    { key:"butterfly", icon:"🦋", name:"幻蝶流光", tag:"PRISM BUTTERFLIES", color:"#dcabff" },
   ];
   let layer;
   let canvas;
@@ -335,6 +339,125 @@ const Battle = (() => {
     ctx.restore();
   }
 
+  function motif(key, x, y, size, color, alpha, rotation=0, phase=0) {
+    ctx.save();
+    ctx.translate(x,y); ctx.rotate(rotation); ctx.scale(size,size);
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+    ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = .13;
+    ctx.shadowColor = color; ctx.shadowBlur = 10;
+    ctx.beginPath();
+    if (key === "heart") {
+      ctx.moveTo(0,.9);
+      ctx.bezierCurveTo(-1.6,-.15,-.8,-1.4,0,-.55);
+      ctx.bezierCurveTo(.8,-1.4,1.6,-.15,0,.9);
+      ctx.fill();
+    } else if (key === "leaf") {
+      ctx.moveTo(-.85,.7); ctx.quadraticCurveTo(-1,-1.1,.9,-.85);
+      ctx.quadraticCurveTo(1.1,.9,-.85,.7); ctx.fill();
+      ctx.strokeStyle = "#e7ffd4"; ctx.lineWidth = .08;
+      ctx.moveTo(-.8,.7); ctx.lineTo(.65,-.6); ctx.stroke();
+    } else if (key === "snow") {
+      for (let i=0;i<6;i++) {
+        ctx.save(); ctx.rotate(i*Math.PI/3);
+        ctx.moveTo(0,0); ctx.lineTo(0,-1);
+        ctx.moveTo(-.26,-.53); ctx.lineTo(0,-.75); ctx.lineTo(.26,-.53);
+        ctx.stroke(); ctx.restore();
+      }
+    } else {
+      ctx.scale(.45 + Math.abs(Math.sin(phase))* .55,1);
+      for (const side of [-1,1]) {
+        ctx.moveTo(0,0);
+        ctx.bezierCurveTo(side*1.6,-1.7,side*1.7,.1,0,.18);
+        ctx.bezierCurveTo(side*1.4,1.5,side*.8,1.6,0,.18);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "#fff3ff"; ctx.moveTo(0,-.5); ctx.lineTo(0,.7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawNatureArt(art, source, target, t, scale) {
+    const clamp = (value) => Math.max(0,Math.min(1,value));
+    const fade = 1-clamp((t-.86)/.14);
+    // Every motif begins at the hero, then fans out towards its destination.
+    if (t > .08 && t < .5) for (let i=0;i<20;i++) {
+      const q=clamp((t-.08-i*.004)/.29);
+      if(q<=0 || q>=1) continue;
+      const angle=i*2.399;
+      const spread=Math.sin(q*Math.PI)*(35+i%5*14)*scale;
+      const x=source.x+(target.x-source.x)*q+Math.cos(angle)*spread;
+      const y=source.y+(target.y-source.y)*q+Math.sin(angle)*spread-(art.key==="snow"?Math.sin(q*Math.PI)*140*scale:0);
+      motif(art.key,x,y,(9+i%3*3)*scale,art.color,fade,art.key==="heart"?0:angle+t*4,t*40+i);
+      glow(x,y,15*scale,art.color,.18*fade);
+    }
+    if(t<.32) return;
+    if(art.key==="heart") {
+      const contract=clamp((t-.35)/.3);
+      const radius=(115-80*contract)*scale;
+      for(let i=0;i<26;i++) {
+        const a=i*Math.PI*2/26;
+        const x=16*Math.pow(Math.sin(a),3)/17;
+        const y=-(13*Math.cos(a)-5*Math.cos(2*a)-2*Math.cos(3*a)-Math.cos(4*a))/17;
+        motif("heart",target.x+x*radius,target.y+y*radius,10*scale,art.color,fade,0);
+      }
+      if(t>.64) {
+        const burst=clamp((t-.64)/.3);
+        glow(target.x,target.y,140*scale,art.color,(1-burst)*.6);
+        for(let i=0;i<3;i++) ring(target.x,target.y,(20+burst*(140+i*35))*scale,art.color,(1-burst)*.8,0);
+        for(let i=0;i<24;i++) {
+          const a=i*2.399,r=(25+burst*180)*scale;
+          motif("heart",target.x+Math.cos(a)*r,target.y+Math.sin(a)*r,12*scale,art.color,(1-burst)*.9,0);
+        }
+      }
+    } else if(art.key==="leaf") {
+      const disperse=clamp((t-.76)/.24);
+      for(let i=0;i<60;i++) {
+        const h=i/59;
+        const angle=h*Math.PI*8+t*22;
+        const radius=(25+h*65+disperse*130)*scale;
+        const x=target.x+Math.cos(angle)*radius;
+        const y=target.y+(h-.5)*180*scale+Math.sin(angle)*radius*.24;
+        motif("leaf",x,y,(8+i%4)*scale,i%3?art.color:"#e0ffc0",fade,angle,t*35+i);
+      }
+      for(let i=0;i<4;i++) ring(target.x,target.y+(i-1.5)*40*scale,(35+i*15)*scale,art.color,fade*.4,t*8+i);
+    } else if(art.key==="snow") {
+      if(t<.68) {
+        for(let i=0;i<32;i++) {
+          const fall=((t-.32)*2.8+i*.117)%1;
+          motif("snow",target.x+Math.sin(i*9.7)*110*scale,target.y+(-160+fall*270)*scale,(8+i%4*2)*scale,art.color,fade,t*4+i);
+        }
+        const freeze=clamp((t-.4)/.18);
+        ctx.save(); ctx.globalAlpha=freeze*.6; ctx.fillStyle="#89ddff";ctx.strokeStyle="#e1fbff";ctx.lineWidth=3;
+        ctx.beginPath();
+        for(let i=0;i<6;i++) {const a=i*Math.PI/3-Math.PI/2,x=target.x+Math.cos(a)*105*scale,y=target.y+Math.sin(a)*130*scale;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+        ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+        motif("snow",target.x,target.y,65*scale,"#ffffff",freeze*.9,0);
+      } else {
+        const burst=clamp((t-.68)/.32);
+        for(let i=0;i<38;i++) {
+          const angle=i*2.399,r=(20+burst*(100+i%6*20))*scale;
+          const x=target.x+Math.cos(angle)*r,y=target.y+Math.sin(angle)*r;
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle+burst*3);ctx.globalAlpha=fade;ctx.fillStyle=i%2?"#e5fcff":art.color;
+          ctx.beginPath();ctx.moveTo(0,-16*scale);ctx.lineTo(8*scale,10*scale);ctx.lineTo(-6*scale,6*scale);ctx.closePath();ctx.fill();ctx.restore();
+        }
+      }
+    } else {
+      // Four staggered flocks circle, then dive in from opposing directions.
+      for(let i=0;i<24;i++) {
+        const attack=clamp((t-.4-(i%4)*.045)/.25);
+        const angle=i*Math.PI*2/24+t*(1-attack)*3;
+        const radius=(1-attack)*(110+i%3*20)*scale;
+        motif("butterfly",target.x+Math.cos(angle)*radius,target.y+Math.sin(angle)*radius*.75,13*scale,i%3?art.color:"#a6f5ff",fade*(1-attack*.7),Math.sin(angle)*.4,t*45+i);
+      }
+      if(t>.68) {
+        const q=clamp((t-.68)/.22);
+        const x=source.x+(target.x-source.x)*q,y=source.y+(target.y-source.y)*q;
+        glow(x,y,95*scale,art.color,fade*.4);
+        motif("butterfly",x,y,(35+q*35)*scale,"#f1d9ff",fade,0,t*30);
+      }
+    }
+  }
+
   function drawArt(art, source, target, t, particles) {
     const clamp = (value) => Math.max(0, Math.min(1, value));
     const dx = target.x - source.x;
@@ -357,6 +480,11 @@ const Battle = (() => {
         const angle = particle.angle + t * 5;
         glow(source.x + Math.cos(angle) * radius, source.y + Math.sin(angle) * radius, 4 * scale, art.color, envelope * .75);
       });
+    }
+
+    if (["heart","leaf","snow","butterfly"].includes(art.key)) {
+      drawNatureArt(art,source,target,t,scale);
+      return;
     }
 
     if (t > launchStart && t < launchEnd) {
@@ -514,7 +642,8 @@ const Battle = (() => {
   }
 
   function randomCast(combo=0, damage=45, level=3) {
-    const unlocked = getSkills(level).filter((art) => art.unlocked);
+    // Other games retain their existing six-skill random repertoire.
+    const unlocked = getSkills(level).slice(0,6).filter((art) => art.unlocked);
     const art = unlocked[Math.floor(Math.random() * unlocked.length)];
     cast(art, combo, damage);
   }
