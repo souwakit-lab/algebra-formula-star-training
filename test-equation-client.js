@@ -1,0 +1,12 @@
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),core=require("./equation-core");
+const nodes={};const node=()=>({style:{setProperty(){}},classList:{toggle(){}},dataset:{},setAttribute(){},replaceChildren(){},querySelectorAll(){return[];}});
+const context=vm.createContext({window:{EquationGameCore:core,NthTermMathRenderer:{render(n,tex){n.tex=tex;}},addEventListener(){}},console,document:{getElementById(id){return nodes[id] ||= node();},createElement:node,addEventListener(){}}});
+vm.runInContext(fs.readFileSync("equation.js","utf8"),context);
+vm.runInContext('entry="5";renderEntry()',context);assert.equal(nodes["submit-answer"].disabled,true);
+vm.runInContext('entry="x=5";renderEntry()',context);assert.equal(nodes["submit-answer"].disabled,false);assert.equal(nodes["answer-display"].tex,"x=5");
+vm.runInContext('toggleSign()',context);assert.equal(vm.runInContext("entry",context),"x=-5");
+vm.runInContext('clearEntry();appendDigit("q");addEquals();addEquals();appendDigit("7")',context);assert.equal(vm.runInContext("entry",context),"q=7");
+assert.equal(vm.runInContext('studentTotalXp({level:5,xp:150})',context),600);
+assert.equal(vm.runInContext('normalizeLevelProgress({level:4,xp:140}).level',context),4);
+assert.equal(vm.runInContext('normalizeLevelProgress({level:4,xp:160}).xp',context),10);
+console.log("PASS: complete-answer keypad, sign/equals input, rendered assignment, 600 total XP and variable level thresholds.");
