@@ -2228,13 +2228,14 @@ async function login(){
 }
 
 function nextQuestion(){
+  $('next-question-button').hidden=true;$('next-question-button').onclick=null;
   Battle.cancel();locked=false;questionErrors=0;stepIndex=0;questionNumber++;
   const recent=recentKeys[progress.level],q=core.generateQuestion(progress.level,Math.random,recent);question=q;question.lastAccepted=q.formula;recent.push(q.key);if(recent.length>30)recent.shift();
   $('question-number').textContent=questionNumber;$('question-type').textContent=question.type;
   $('question-math').replaceChildren();const label=document.createElement('div');label.className='question-instruction';label.textContent='解下列方程';const equation=document.createElement('div');equation.className='equation-display equation-line';renderEquationLine(equation,question.formula);$('question-math').append(label,equation);
   $('step-history').replaceChildren();$('feedback').className='feedback';$('feedback').textContent='';$('step-input').value='';$('step-input').placeholder=`請使用 ${question.variable} 填寫完整等式（例：${question.variable}=2+3）`;$('error-preview').replaceChildren();
   const variableKey=$('variable-key');variableKey.dataset.key=question.variable;variableKey.textContent=question.variable;
-  $('question-source').textContent=question.source.replace(/工作紙(\d+)/g,'工作紙 $1')+' · 隨機題型';
+  $('question-source').textContent='';
    $('fraction-composer').hidden=true;
   updateStepControls();updateProgress();updateInputPreview();$('step-input').focus();
 }
@@ -2469,8 +2470,9 @@ function completeQuestion(){
   $('feedback').className='feedback show correct';$('feedback').textContent=`🎉 完成整題！+${XP_PER_QUESTION} EXP，魔王 HP −${BOSS_DAMAGE_PER_QUESTION}${questionErrors?'（本題曾修正 '+questionErrors+' 步）':'，全程無錯！'}`;
   $('step-progress').style.width='100%';$('submit-answer').disabled=true;
   updateProgress();
-  window.setTimeout(()=>{if(levelUp){const info=core.LEVELS[progress.level];$('dialog-avatar').src=info.avatar;$('dialog-kicker').textContent='LEVEL UP';$('dialog-title').textContent=`進入 Level ${progress.level}`;$('dialog-copy').textContent=info.title+'已解鎖！';$('level-dialog').showModal();}
-    else nextQuestion();},1500);
+  $('next-question-button').hidden=false;
+  $('next-question-button').onclick=()=>{if(!locked)return;if(levelUp){const info=core.LEVELS[progress.level];$('dialog-avatar').src=info.avatar;$('dialog-kicker').textContent='LEVEL UP';$('dialog-title').textContent=`進入 Level ${progress.level}`;$('dialog-copy').textContent=info.title+'已解鎖！';$('level-dialog').showModal();}
+    else nextQuestion();};
 }
 function cumulativeExp(p){return (p.level-1)*XP_LEVEL_THRESHOLD+p.xp;}
 function renderXp(){const total=cumulativeExp(progress);$('xp-value-label').textContent=`${total} EXP`;}
@@ -2769,7 +2771,7 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
         </div>
         <div id="pattern-preview" class="pattern-preview hidden" aria-label="圖案數列示意"></div>
         <div id="question-math" class="math-question" aria-label="題目"></div>
-        <div class="step-intro"><span id="question-source">工作紙 18 對應題型</span><strong id="xp-value-label">0 EXP</strong></div>
+        <div class="step-intro"><span id="question-source" hidden></span><strong id="xp-value-label">0 EXP</strong></div>
         <div id="step-history" class="step-history" aria-live="polite"></div>
         <section class="step-task" aria-label="當前解題步驟">
           <div class="step-header"><span id="step-number">步驟 1 / 3</span><div class="step-header-actions"><b id="step-skill">移項</b><button type="button" id="open-example" class="worked-example-btn">📖 查看同題型例題</button></div></div>
@@ -2780,7 +2782,7 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
           <div id="error-preview" class="error-preview" aria-live="polite"></div>
           <button type="button" id="submit-answer" class="step-submit">檢查這一步 ✓</button>
         </section>
-        <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite"></div><button type="button" id="next-question-button" class="next-question-button" hidden>下一題 →</button>
         <div id="fraction-composer" class="fraction-composer" hidden aria-label="上下分數輸入框">
           <div class="fraction-composer-head"><strong>輸入上下分數</strong><span>分子、分母分別填寫，不用打括號</span></div>
           <div class="fraction-slots">
