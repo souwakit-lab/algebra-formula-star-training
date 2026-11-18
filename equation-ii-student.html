@@ -2229,7 +2229,7 @@ async function login(){
 
 function nextQuestion(){
   $('next-question-button').hidden=true;$('next-question-button').onclick=null;
-  Battle.cancel();locked=false;questionErrors=0;stepIndex=0;questionNumber++;
+  Battle.cancel();locked=false;resetAnswerCooldown();questionErrors=0;stepIndex=0;questionNumber++;
   const recent=recentKeys[progress.level],q=core.generateQuestion(progress.level,Math.random,recent);question=q;question.lastAccepted=q.formula;recent.push(q.key);if(recent.length>30)recent.shift();
   $('question-number').textContent=questionNumber;$('question-type').textContent=question.type;
   $('question-math').replaceChildren();const label=document.createElement('div');label.className='question-instruction';label.textContent='解下列方程';const equation=document.createElement('div');equation.className='equation-display equation-line';renderEquationLine(equation,question.formula);$('question-math').append(label,equation);
@@ -2370,12 +2370,23 @@ function showWorkedExample(){
  $('worked-example-dialog').showModal();
 }
 function updateStepControls(){const step=question.steps[stepIndex];$('step-number').textContent=`步驟 ${stepIndex+1} / ${question.steps.length}`;$('step-skill').textContent=step.skill;
- $('step-tip').textContent=(skillsHint[step.skill]||'每次輸入一整行等式。');$('submit-answer').disabled=locked;
+ $('step-tip').textContent=(skillsHint[step.skill]||'每次輸入一整行等式。');updateAnswerCooldown();
  $('step-progress').style.width=`${stepIndex/question.steps.length*100}%`;
  $('step-input').setAttribute('aria-label',`第 ${stepIndex+1} 步 ${step.skill} 的完整方程`);
 }
+let stepWrongStreak=0,answerCooldownUntil=0,answerCooldownTimer=null;
+function updateAnswerCooldown(){
+ clearTimeout(answerCooldownTimer);answerCooldownTimer=null;
+ const remaining=Math.max(0,answerCooldownUntil-Date.now()),button=$('submit-answer');
+ button.disabled=locked||remaining>0;
+ button.textContent=remaining>0?`請稍候 ${Math.ceil(remaining/1000)} 秒`:'檢查這一步 ✓';
+ if(remaining>0)answerCooldownTimer=setTimeout(updateAnswerCooldown,Math.min(250,remaining));
+}
+function startAnswerCooldown(){answerCooldownUntil=Date.now()+5000;updateAnswerCooldown();}
+function resetAnswerCooldown(){stepWrongStreak=0;answerCooldownUntil=0;clearTimeout(answerCooldownTimer);answerCooldownTimer=null;updateAnswerCooldown();}
+
 function submitStep(){
-  if(!question||locked)return;
+  if(!question||locked||Date.now()<answerCooldownUntil)return;
   const value=$('step-input').value.trim();if(!value){$('step-input').focus();return;}
   const oldIndex=stepIndex,step=question.steps[oldIndex],previous=question.lastAccepted||question.formula;
   const doneAt=new Date().toISOString();
@@ -2384,12 +2395,13 @@ function submitStep(){
   let xpDelta=0,isComplete=false,skipped=0;
   let action=step.skill;
   if(!result.ok){
-    xpDelta=-Math.min(XP_ERROR_PENALTY,progress.xp);progress.xp+=xpDelta;questionErrors++;progress.stepErrors++;progress.levelStats[question.level].stepErrors++;progress.mistakes++;
+    stepWrongStreak++;xpDelta=stepWrongStreak<=3?-Math.min(XP_ERROR_PENALTY,progress.xp):0;progress.xp+=xpDelta;questionErrors++;progress.stepErrors++;progress.levelStats[question.level].stepErrors++;progress.mistakes++;
     progress.mistakeHistory.push({timestamp:doneAt,level:question.level,question:question.formula,stepType:step.skill,stepIndex:oldIndex+1,studentAnswer:value,correctAnswer:'需重新完成本步驟'});
     progress.mistakeHistory=progress.mistakeHistory.slice(-400);
-    $('feedback').className='feedback show wrong';$('feedback').textContent=`本步驟需要修正，${xpDelta?`經驗值 ${xpDelta} EXP`:'經驗值已為 0 EXP'}。${result.message}`;
-    $('step-input').classList.add('wrong-input');showErrors(value,['left','right'],'direct');Battle.enemyBreath();
+    $('feedback').className='feedback show wrong';$('feedback').textContent=`本步驟需要修正，${xpDelta?`經驗值 ${xpDelta} EXP`:(stepWrongStreak>3?'本步驟已達扣分上限，不再扣 EXP':'經驗值已為 0 EXP')}。${result.message}`;
+    $('step-input').classList.add('wrong-input');showErrors(value,['left','right'],'direct');Battle.enemyBreath();startAnswerCooldown();
   }else{
+    stepWrongStreak=0;
     const solved=result.solved;
     // A pupil may land on a later canonical line. Find the FURTHEST exact
     // matching stage; otherwise rebuild the remaining work from their actual
@@ -2594,7 +2606,7 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
 .error-circled{border:3px solid #ff576f;border-radius:55% 47% 59% 40%;padding:4px 9px;transform:rotate(-1.5deg);background:#5e1c2c69;color:#fff;white-space:pre-wrap}
 .step-submit{width:100%;min-height:42px;margin-top:7px;background:var(--mint);border:0;border-radius:6px;color:#0a1725;font-size:15px;font-weight:900;cursor:pointer}
 .step-submit:hover{filter:brightness(1.1)}
-.step-submit:disabled{opacity:.6;cursor:default}
+.step-submit:disabled{background:#555e6b;color:#d4d7dd;opacity:1;cursor:not-allowed;filter:none}
 .practice-panel .feedback{min-height:0;width:100%;font-size:13px;line-height:1.5;margin-top:8px}
 .process-keypad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;width:100%;margin:10px 0 0}
 .process-keypad button{min-height:38px;padding:4px;border:1px solid #4b5f7a;border-radius:5px;background:#24344e;color:#f5f8fe;font:800 19px 'Cambria Math',sans-serif;cursor:pointer}
