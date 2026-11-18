@@ -2487,7 +2487,7 @@ function updateProgress(){const info=core.LEVELS[progress.level];$('level-kicker
  Battle.updateStatus({combo:progress.streak,bossHp,bossMaxHp});renderSkills();renderStats();renderXp();
 }
 function renderSkills(){const items=Battle.getSkills(progress.level);const unlocked=items.filter(x=>x.unlocked);if(!unlocked.some(x=>x.key===selectedSkill))selectedSkill=unlocked[0]?.key||'tide';
- $('skill-list').replaceChildren(...items.map(s=>{const btn=document.createElement('button');btn.type='button';btn.dataset.skill=s.key;btn.className='skill-button';btn.classList.toggle('selected',s.key===selectedSkill);btn.disabled=!s.unlocked||locked;btn.title=s.unlocked?'答對整題後施放':`Level ${s.unlockLevel} 解鎖`;
+ $('skill-list').replaceChildren(...items.map(s=>{const btn=document.createElement('button');btn.type='button';btn.dataset.skill=s.key;btn.className='skill-button';btn.classList.toggle('skill-locked',!s.unlocked);btn.classList.toggle('selected',s.key===selectedSkill);btn.disabled=!s.unlocked||locked;btn.title=s.unlocked?'答對整題後施放':`Level ${s.unlockLevel} 解鎖`;
   const icon=document.createElement('span');icon.textContent=s.icon;icon.className='skill-icon';const label=document.createElement('span');label.textContent=s.name;btn.append(icon,label);btn.style.setProperty('--skill-color',s.color);return btn;}));
 }
 async function verifyPassword(e){e.preventDefault();const bytes=new TextEncoder().encode($('action-password').value),digest=await crypto.subtle.digest('SHA-256',bytes),hash=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
