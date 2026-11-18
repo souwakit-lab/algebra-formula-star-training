@@ -314,7 +314,7 @@ function askTeacherPassword(message){return new Promise(resolve=>{
  let value=null;form.onsubmit=()=>{value=input.value;};dialog.onclose=()=>{dialog.remove();resolve(value);};
  label.append(input);form.append(label,submit,cancel);dialog.append(form);document.body.append(dialog);dialog.showModal();input.focus();
  });}
-function startRefreshTimer(){clearTimeout(refreshTimer);if(!document.hidden&&teacherPin)refreshTimer=setTimeout(refreshData,3000);}
+function startRefreshTimer(){clearTimeout(refreshTimer);if(!document.hidden)refreshTimer=setTimeout(refreshData,3000);}
 async function eq2DashboardRequest(action,params={},post=false){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
  try{
@@ -325,12 +325,11 @@ async function eq2DashboardRequest(action,params={},post=false){
 async function refreshData(){
  clearTimeout(refreshTimer);
  if(document.hidden)return;
- if(!await ensureTeacherPin()){$('updated-at').textContent='需輸入教師 PIN，重新整理即可登入';return;}
  const version=++refreshGeneration,className=$('class-filter').value;
  refreshController?.abort();const controller=new AbortController();refreshController=controller;
  const timeout=setTimeout(()=>controller.abort(),20000);
  try{
-  const response=await fetch(`${API_URL}?${new URLSearchParams({action:'eq2Dashboard',className,adminPin:teacherPin,t:Date.now()})}`,{cache:'no-store',signal:controller.signal});
+  const response=await fetch(`${API_URL}?${new URLSearchParams({action:'eq2Dashboard',className,t:Date.now()})}`,{cache:'no-store',signal:controller.signal});
   const data=await response.json();if(!response.ok||data.ok===false||!Array.isArray(data.players))throw Error(data.error||'連線失敗');
   if(version!==refreshGeneration)return;renderDashboard(data);
  }catch(e){if(version!==refreshGeneration)return;if(String(e.message).includes('PIN')){teacherPin='';$('updated-at').textContent='教師 PIN 錯誤，請重新整理重試';}else $('updated-at').textContent='連線暫停，保留上次數據，稍後重試';}
