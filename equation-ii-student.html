@@ -814,10 +814,10 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
   'use strict';
   const LEVEL_COUNT=5, REQUIREMENTS={1:200,2:200,3:200,4:200,5:200};
   const LABELS={
-    1:['移項或化系數為 1','工作紙 18 · 基礎單步方程'],
-    2:['移項及化系數為 1','工作紙 18 · 例如 4x−2=6'],
+    1:['移項或化系數為 1','基礎單步方程'],
+    2:['移項及化系數為 1','例如 4x−2=6'],
     3:['兩邊含未知數的移項','銜接練習 · 例如 4x−2=6−5x'],
-    4:['單層去括號、移項、合併','工作紙 18、21 · 單層括號'],
+    4:['單層去括號、移項、合併','單層括號'],
     5:['兩邊含未知數及去括號','兩邊未知數及括號']
   };
   const LETTERS=[...'xyzabchpndwt'];
@@ -858,7 +858,7 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
     const a=pick([-6,-5,-4,-3,-2,2,3,4,5,6],rng);
     const b=pick([-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8],rng);
     let formula,steps,template;
-    const source=level===3?'工作紙 18、21 銜接練習':level<4?'工作紙18':level===4?'工作紙 18、21':'工作紙21';
+    const source=level===3?'銜接練習':level<4?'':level===4?'':'';
     const A=(n)=>coeff(n,v);
     const finish=(n)=>[mk('化系數為 1',`(${A(n)})/(${n})=(${int(n*s)})/(${n})`,'兩邊同除以未知數的係數。'),mk('計算',`${v}=${sText}`)];
     if(level===1){
