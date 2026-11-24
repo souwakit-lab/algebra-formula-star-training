@@ -281,7 +281,7 @@ function renderDashboard(raw){const players=(raw.players||[]).map(normalizePlaye
  renderRanking('correct-list',[...players].sort((a,b)=>b.total-a.total||b.correct-a.correct),p=>`${p.total} 題`);
  renderWarnings(players);renderStepErrors(raw.stepSkills||[]);
 }
-function cumulativeExp(p){return (p.level-1)*200+p.xp;}
+function cumulativeExp(p){return (p.level-1)*80+p.xp;}
 function accuracy(p){return p.stepAttempts?Math.max(0,(p.stepAttempts-p.stepErrors)/p.stepAttempts):0;}
 function renderTiers(players,levels){const counts=[1,2,3,4,5].map(i=>players.filter(p=>p.level===i).length),max=Math.max(1,...counts);
  counts.forEach((n,index)=>{const l=index+1,stats=levels.find(s=>Number(s.level)===l)||{};const attempts=Number(stats.stepAttempts)||0,errors=Number(stats.stepErrors)||0;
@@ -592,7 +592,7 @@ document.addEventListener('DOMContentLoaded',initDashboard);
       <div class="battle-stage">
         <img class="boss-watermark" src="equation-ii-assets/monster-lv7.webp" alt="">
         <img class="boss-main" src="equation-ii-assets/monster-lv7.webp" alt="混沌序列巨龍">
-        <div class="boss-name"><small>FINAL BOSS</small><strong>混沌序列巨龍</strong><span>每完成一題，所有學生共同削減 15 HP（與 +15 EXP 一致）</span></div>
+        <div class="boss-name"><small>FINAL BOSS</small><strong>混沌序列巨龍</strong><span>每完成一題，所有學生共同削減 15 HP</span></div>
         <div class="live-stats">
           <div><span>參與學生</span><strong id="stat-players">0</strong></div>
           <div><span>完成題數</span><strong id="stat-answers">0</strong></div>
@@ -623,7 +623,7 @@ document.addEventListener('DOMContentLoaded',initDashboard);
 </section>
     <section class="leaderboard-grid">
       <article class="leaderboard dark-panel accent-yellow">
-        <div class="leaderboard-title"><i data-lucide="trophy"></i><div><strong>經驗值排行榜</strong><span>完成一題 +15 EXP ／ 錯誤一步 −5 EXP</span></div></div>
+        <div class="leaderboard-title"><i data-lucide="trophy"></i><div><strong>經驗值排行榜</strong><span>完成一題 0～15 EXP ／ 答錯只減少本題獎勵</span></div></div>
         <ol id="xp-list"></ol>
       </article>
       <article class="leaderboard dark-panel accent-sky">
