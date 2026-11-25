@@ -1236,17 +1236,24 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
     }catch{return false;}
   }
   function solvedForm(equation,variable){
-    // A final answer may be an exact fraction such as x=-5/3, not only an integer.
-    const numericLiteral=n=>n.type==='num'||
-      (n.type==='neg'&&numericLiteral(n.value))||
-      (n.type==='div'&&numericLiteral(n.left)&&numericLiteral(n.right));
+    // Completion requires variable = a number or a reduced integer fraction.
+    function integer(n){
+      if(n.type==='neg'){const v=integer(n.value);return v===null?null:-v;}
+      return n.type==='num'&&/^\d+$/.test(n.value)?BigInt(n.value):null;
+    }
+    function simplest(n){
+      if(n.type==='num')return Number.isFinite(Number(n.value));
+      if(n.type==='neg')return simplest(n.value);
+      if(n.type!=='div')return false;
+      const numerator=integer(n.left),denominator=integer(n.right);
+      if(numerator===null||denominator===null||denominator<=1n)return false;
+      let a=numerator<0n?-numerator:numerator,b=denominator;
+      while(b){const remainder=a%b;a=b;b=remainder;}
+      return a===1n;
+    }
     try{
-      const {nodes,values}=equationInfo(equation,variable);
-      for(const [i,j] of [[0,1],[1,0]]){
-        if(nodes[i].type==='var'&&nodes[i].value===variable&&
-          Math.abs(values[j].a)<1e-11&&numericLiteral(nodes[j]))return true;
-      }
-      return false;
+      const {nodes}=equationInfo(equation,variable);
+      return nodes[0].type==='var'&&nodes[0].value===variable&&simplest(nodes[1]);
     }catch{return false;}
   }
   function formatNumber(value){
@@ -1264,6 +1271,9 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
       if(solvedForm(equation,variable))return null;
       const answer=`${variable}=${formatNumber(info.solution)}`;
       const [l,r]=info.values;
+      if(info.nodes.some((n,i)=>n.type==='var'&&n.value===variable&&Math.abs(info.values[1-i].a)<1e-11)){
+        return {skill:'整理最終答案',eq:answer,hint:'最後答案須把字母放在左邊，分數約至最簡；若可化成整數，請寫整數。'};
+      }
       const v=variable,small=x=>Math.abs(x)<1e-10;
       const coeffString=a=>coeff(formatNumber(a),v);
       const trimmed=txt=>txt.replace(/\+\-/g,'-').replace(/--/g,'+');
@@ -1299,7 +1309,7 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
       // Still reject an unchanged line (including reordering within each side).
       if(typed.parts.every((part,i)=>expressionKey(part)===expressionKey(from.parts[i])))
         return {ok:false,message:'這一行只是重排原式，請完成一個新的運算步驟。'};
-      return {ok:true,solved:solvedForm(actual,variable),message:'正確的等價變形；字母在左或右均可，也可跳步。'};
+      return {ok:true,solved:solvedForm(actual,variable),message:'正確的等價變形；中間步驟字母可在任一邊，最後須字母在左、答案約至最簡。'};
     }catch(e){return {ok:false,message:'請填寫有唯一解的完整一元一次方程，並檢查分母、括號及未知數。'};}
   }
   function identifyRoute(actual,previous,variable,fallback){
@@ -2486,7 +2496,7 @@ function submitStep(){
     isComplete=solved;
     $('feedback').className='feedback show correct';
     if(isComplete){
-      $('feedback').textContent=skipped>0?'✓ 已跳步求出正確答案！':'✓ 已求出正確答案！';
+      $('feedback').textContent=question.steps[stepIndex]?.skill==='整理最終答案'?'✓ 等價變形正確！最後請把字母放左邊，分數約至最簡（可化成整數時寫整數）。':skipped>0?'✓ 已跳步求出正確答案！':'✓ 已求出正確答案！';
       locked=true;xpDelta=questionReward();completeQuestion();
     }else{
       $('feedback').textContent=skipped>0?`✓ 算式正確，已自動跳過 ${skipped} 步！`:
