@@ -574,7 +574,26 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
     let source = String(tex || "").replace(/\\left/g, "").replace(/\\right/g, "");
     // Accept simple a/b notation as a fallback when a question source omits
     // the internal fraction marker.
-    source = source.replace(/([A-Za-z0-9]+(?:[²³⁻⁺])?|\([^()]+\))\/([A-Za-z0-9]+(?:[²³⁻⁺])?|\([^()]+\))/g, "\\frac{$1}{$2}");
+    // Scan balanced parentheses: the numerator may contain nested brackets.
+    source = source.replace(/\s*\/\s*/g, '/');
+    for(let slash=source.indexOf('/');slash>=0;slash=source.indexOf('/',slash+1)){
+      let left=slash-1,right=slash+1;
+      if(source[left]===')'){
+        let depth=1;left--;
+        while(left>=0&&depth){if(source[left]===')')depth++;if(source[left]==='(')depth--;left--;}
+        if(depth)continue;
+        while(left>=0&&/[A-Za-z0-9.]/.test(source[left]))left--;
+      }else while(left>=0&&/[A-Za-z0-9.]/.test(source[left]))left--;
+      if(source[right]==='('){
+        let depth=1;right++;
+        while(right<source.length&&depth){if(source[right]==='(')depth++;if(source[right]===')')depth--;right++;}
+        if(depth)continue;
+      }else while(right<source.length&&/[A-Za-z0-9.]/.test(source[right]))right++;
+      if(left===slash-1||right===slash+1)continue;
+      const fraction='\\frac{'+source.slice(left+1,slash)+'}{'+source.slice(slash+1,right)+'}';
+      source=source.slice(0,left+1)+fraction+source.slice(right);
+      slash=left+fraction.length;
+    }
     const tokens = [];
     let buffer = "";
     let cursor = 0;
@@ -1276,9 +1295,11 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
       const typed=equationInfo(actual,variable),from=equationInfo(previous,variable),start=equationInfo(original,variable);
       if(!close(typed.solution,from.solution)||!close(typed.solution,start.solution))
         return {ok:false,message:'本行方程與原方程的解不同，請檢查符號及等號兩邊的運算。'};
-      if(sameEquationStructure(actual,previous))
+      // Equality may be reversed to keep the variable on the student's chosen side.
+      // Still reject an unchanged line (including reordering within each side).
+      if(typed.parts.every((part,i)=>expressionKey(part)===expressionKey(from.parts[i])))
         return {ok:false,message:'這一行只是重排原式，請完成一個新的運算步驟。'};
-      return {ok:true,solved:solvedForm(actual,variable),message:'正確的等價變形，可以使用不同解法或跳步。'};
+      return {ok:true,solved:solvedForm(actual,variable),message:'正確的等價變形；字母在左或右均可，也可跳步。'};
     }catch(e){return {ok:false,message:'請填寫有唯一解的完整一元一次方程，並檢查分母、括號及未知數。'};}
   }
   function identifyRoute(actual,previous,variable,fallback){
