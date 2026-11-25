@@ -269,7 +269,7 @@ function initQrCode(){const studentUrl=window.EQUATION_CONFIG?.studentUrl||new U
 }
 async function ensureTeacherPin(){if(teacherPin)return true;const value=await askTeacherPassword('請輸入教師密碼（與學生版切換學生密碼相同）：');if(!value)return false;teacherPin=value;return true;}
 
-function normalizePlayerLevel(p){return {...p,level:Math.max(1,Math.min(5,Number(p.level)||1)),xp:Math.max(0,Number(p.xp)||0),total:Number(p.total)||0,correct:Number(p.correct)||0,stepAttempts:Number(p.stepAttempts)||0,stepErrors:Number(p.stepErrors)||0,streak:Number(p.streak)||0,mistakes:Number(p.mistakes)||0};}
+function normalizePlayerLevel(p){return {...p,level:Math.max(1,Math.min(6,Number(p.level)||1)),xp:Math.max(0,Number(p.xp)||0),total:Number(p.total)||0,correct:Number(p.correct)||0,stepAttempts:Number(p.stepAttempts)||0,stepErrors:Number(p.stepErrors)||0,streak:Number(p.streak)||0,mistakes:Number(p.mistakes)||0};}
 function renderDashboard(raw){const players=(raw.players||[]).map(normalizePlayerLevel);latestData={...raw,players};const solved=players.reduce((n,p)=>n+p.total,0),attempts=players.reduce((n,p)=>n+p.stepAttempts,0),errors=players.reduce((n,p)=>n+p.stepErrors,0);
  const max=Number(raw.bossMaxHp)||300000,hp=Number.isFinite(Number(raw.bossHp))?Math.max(0,Number(raw.bossHp)):max;
  $('boss-copy').textContent=`${hp.toLocaleString('zh-Hant')} / ${max.toLocaleString('zh-Hant')}`;$('boss-bar').style.width=`${Math.min(100,100*hp/max)}%`;
@@ -283,7 +283,7 @@ function renderDashboard(raw){const players=(raw.players||[]).map(normalizePlaye
 }
 function cumulativeExp(p){return (p.level-1)*80+p.xp;}
 function accuracy(p){return p.stepAttempts?Math.max(0,(p.stepAttempts-p.stepErrors)/p.stepAttempts):0;}
-function renderTiers(players,levels){const counts=[1,2,3,4,5].map(i=>players.filter(p=>p.level===i).length),max=Math.max(1,...counts);
+function renderTiers(players,levels){const counts=[1,2,3,4,5,6].map(i=>players.filter(p=>p.level===i).length),max=Math.max(1,...counts);
  counts.forEach((n,index)=>{const l=index+1,stats=levels.find(s=>Number(s.level)===l)||{};const attempts=Number(stats.stepAttempts)||0,errors=Number(stats.stepErrors)||0;
  $(`tier-${l}-count`).textContent=n;$(`tier-${l}-stats`).textContent=`${stats.total||0} 題 · 錯步 ${errors} · ${attempts?Math.round(100*(attempts-errors)/attempts)+'%':'--'}`;
  $(`tier-${l}-bar`).style.width=`${100*n/max}%`;
@@ -343,11 +343,11 @@ async function resetData(){
 }
 async function getExport(){if(!await ensureTeacherPin())throw Error('請輸入教師 PIN');return eq2DashboardRequest('eq2Export',{className:$('class-filter').value,adminPin:teacherPin});}
 
-function buildStudentSummaryRows(data){const headers=['班別','學號','姓名','Level','本級 EXP','累積 EXP','完成題數','全程無錯題數','錯誤步數','步驟嘗試','步驟正確率'];for(let i=1;i<=5;i++)headers.push(`L${i} 完成`,`L${i} 錯誤步數`,`L${i} 正確率`);
+function buildStudentSummaryRows(data){const headers=['班別','學號','姓名','Level','本級 EXP','累積 EXP','完成題數','全程無錯題數','錯誤步數','步驟嘗試','步驟正確率'];for(let i=1;i<=6;i++)headers.push(`L${i} 完成`,`L${i} 錯誤步數`,`L${i} 正確率`);
  const students=new Map((data.players||[]).map(p=>[`${p.className}:${p.id}`,normalizePlayerLevel(p)]));
- const answers=new Map();for(const e of data.answers||[]){const key=`${e.className}:${e.id}`,l=Math.min(5,Math.max(1,Number(e.level)||1));if(!answers.has(key))answers.set(key,Array.from({length:5},()=>({completed:0,attempts:0,errors:0})));const s=answers.get(key)[l-1];s.attempts++;if(!e.isCorrect)s.errors++;if(e.isCompletion)s.completed++;}
+ const answers=new Map();for(const e of data.answers||[]){const key=`${e.className}:${e.id}`,l=Math.min(6,Math.max(1,Number(e.level)||1));if(!answers.has(key))answers.set(key,Array.from({length:6},()=>({completed:0,attempts:0,errors:0})));const s=answers.get(key)[l-1];s.attempts++;if(!e.isCorrect)s.errors++;if(e.isCompletion)s.completed++;}
  const rows=[headers];for(const p of [...students.values()].sort((a,b)=>a.className.localeCompare(b.className)||a.id-b.id)){
-   const ls=answers.get(`${p.className}:${p.id}`)||Array.from({length:5},()=>({completed:0,attempts:0,errors:0}));const row=[p.className,p.id,p.name,p.level,p.xp,cumulativeExp(p),p.total,p.correct,p.stepErrors,p.stepAttempts,p.stepAttempts?`${Math.round(100*accuracy(p))}%`:'--'];for(const s of ls)row.push(s.completed,s.errors,s.attempts?`${Math.round(100*(s.attempts-s.errors)/s.attempts)}%`:'--');rows.push(row);
+   const ls=answers.get(`${p.className}:${p.id}`)||Array.from({length:6},()=>({completed:0,attempts:0,errors:0}));const row=[p.className,p.id,p.name,p.level,p.xp,cumulativeExp(p),p.total,p.correct,p.stepErrors,p.stepAttempts,p.stepAttempts?`${Math.round(100*accuracy(p))}%`:'--'];for(const s of ls)row.push(s.completed,s.errors,s.attempts?`${Math.round(100*(s.attempts-s.errors)/s.attempts)}%`:'--');rows.push(row);
  }return rows;
 }
 async function downloadData(){try{const data=await getExport();downloadCsv(`一元一次方程二_學生總表_${selectedScopeLabel()}_${fileStamp()}.csv`,buildStudentSummaryRows(data));showToast('已下載學生總體數據');}catch(e){showToast(e.message);}}
@@ -608,6 +608,7 @@ document.addEventListener('DOMContentLoaded',initDashboard);
           <div class="tier-row"><span class="tier-dot level-three"></span><b>Level 3</b><div><i id="tier-3-bar"></i></div><strong id="tier-3-count">0</strong><small id="tier-3-stats">0 題 · 對 0 · 錯 0 · --</small></div>
           <div class="tier-row"><span class="tier-dot level-four"></span><b>Level 4</b><div><i id="tier-4-bar"></i></div><strong id="tier-4-count">0</strong><small id="tier-4-stats">0 題 · 對 0 · 錯 0 · --</small></div>
           <div class="tier-row"><span class="tier-dot level-five"></span><b>Level 5</b><div><i id="tier-5-bar"></i></div><strong id="tier-5-count">0</strong><small id="tier-5-stats">0 題 · 對 0 · 錯 0 · --</small></div>
+<div class="tier-row"><span class="tier-dot level-six"></span><b>Level 6</b><div><i id="tier-6-bar"></i></div><strong id="tier-6-count">0</strong><small id="tier-6-stats">0 題 · 對 0 · 錯 0 · --</small></div>
         </section>
         <section class="join-panel dark-panel">
           <div class="panel-heading"><strong>掃碼加入討伐</strong><i data-lucide="scan-line"></i></div>

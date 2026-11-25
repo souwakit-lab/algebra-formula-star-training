@@ -812,18 +812,18 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
 /* Equation II: question families based on worksheet 18 and 21. No external services. */
 (function (root) {
   'use strict';
-  const LEVEL_COUNT=5, REQUIREMENTS={1:80,2:80,3:80,4:80,5:80};
+  const LEVEL_COUNT=6, REQUIREMENTS={1:80,2:80,3:80,4:80,5:80,6:80};
   const LABELS={
     1:['移項或化系數為 1','基礎單步方程'],
     2:['移項及化系數為 1','例如 4x−2=6'],
     3:['兩邊含未知數的移項','銜接練習 · 例如 4x−2=6−5x'],
     4:['單層去括號、移項、合併','單層括號'],
-    5:['兩邊含未知數及去括號','兩邊未知數及括號']
+    5:['兩邊含未知數及去括號','兩邊未知數及括號'],6:['去分母解方程','先乘最小公倍數，再去括號及移項']
   };
   const LETTERS=[...'xyzabchpndwt'];
-  const rank=['','初級魔法學徒','星紋術士','星海導師','極光賢者','星穹大法皇'];
-  const LEVELS=Object.fromEntries(Array.from({length:5},(_,i)=>{
-    const l=i+1;return [l,{title:LABELS[l][0],mission:LABELS[l][0],hint:LABELS[l][1],rank:rank[l],avatar:root.EQUATION_BUNDLE_ASSETS?.[`hero-lv${l}.webp`]||''}];
+  const rank=['','初級魔法學徒','星紋術士','星海導師','極光賢者','星穹大法皇','分式星術師'];
+  const LEVELS=Object.fromEntries(Array.from({length:6},(_,i)=>{
+    const l=i+1;return [l,{title:LABELS[l][0],mission:LABELS[l][0],hint:LABELS[l][1],rank:rank[l],avatar:root.EQUATION_BUNDLE_ASSETS?.[`hero-lv${Math.min(l,5)}.webp`]||''}];
   }));
   const rand=(lo,hi,rng)=>lo+Math.floor(rng()*(hi-lo+1));
   const pick=(arr,rng)=>arr[rand(0,arr.length-1,rng)];
@@ -866,11 +866,11 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
       if(template==='move'||template==='reverseMove'){
         chooseRoot(1);const r=s+b;
         formula=template==='move'?`${v}${sign(b)}=${r}`:`${r}=${v}${sign(b)}`;
-        steps=[mk('移項',`${v}=${r}${sign(-b)}`),mk('計算',`${v}=${s}`)];
+        steps=template==='reverseMove'?[mk('移項',`-${v}=${b}${sign(-r)}`,'字母移到左邊，數字移到右邊；移項要變號。'),mk('計算',`-${v}=${-s}`),mk('化系數為 1',`${v}=${s}`)]:[mk('移項',`${v}=${r}${sign(-b)}`),mk('計算',`${v}=${s}`)];
       }else{
         chooseRoot(a);const r=int(a*s);
         formula=template==='coefficient'?`${A(a)}=${r}`:`${r}=${A(a)}`;
-        steps=finish(a);
+        steps=template==='reverseCoefficient'?[mk('移項',`${A(-a)}=${-r}`),...finish(-a)]:finish(a);
       }
     }else if(level===2){
       template=pick(['standard','reverseStandard','constantFirst'],rng);
@@ -878,7 +878,7 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
       formula=template==='standard'?`${A(a)}${sign(b)}=${c}`:
         template==='reverseStandard'?`${c}=${A(a)}${sign(b)}`:
         `${b}${sign(a)}${v}=${c}`;
-      steps=[mk('移項',`${A(a)}=${c}${sign(-b)}`),mk('合併／計算',`${A(a)}=${a*s}`),...finish(a)];
+      steps=template==='reverseStandard'?[mk('移項',`${A(-a)}=${b}${sign(-c)}`),mk('合併／計算',`${A(-a)}=${-a*s}`),...finish(-a)]:[mk('移項',`${A(a)}=${c}${sign(-b)}`),mk('合併／計算',`${A(a)}=${a*s}`),...finish(a)];
     }else if(level===3){
       template=pick(['bothSides','reverseBothSides','constantFirstBothSides'],rng);
       let c=pick([-5,-4,-3,-2,-1,1,2,3,4,5],rng);
@@ -919,6 +919,31 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
         steps.push(mk('移項',`${A(k)}=${r}${sign(-k*b)}`));
       }
       steps.push(mk('合併／計算',`${A(k)}=${int(k*s)}`),...finish(k));
+    }else if(level===6){
+      const gcd=(x,y)=>y?gcd(y,x%y):x;
+      const d=pick([2,3,4,5,6,8,10],rng),e=pick([3,4,5,6,8,10,12],rng),lcm=d*e/gcd(d,e),u=lcm/d,w=lcm/e;
+      template=pick(['fractionAcross','fractionSum'],rng);
+      let k=pick([1,2,3,4],rng),offset,rhs,n;
+      if(template==='fractionAcross'){
+        n=u-w*k;if(!n)return null;
+        // Integer roots without rejecting either pictured family.
+        offset=pick([-4,-3,-2,-1,1,2,3,4],rng)*n;
+        s=-u*offset/n;sText=String(s);
+        formula=`(${v}${sign(offset)})/${d}=(${A(k)})/${e}`;
+        steps=[mk('去分母',`${u}(${v}${sign(offset)})=${A(w*k)}`,`兩邊每一項同乘最小公倍數 ${lcm}。`),
+          mk('去括號',`${A(u)}${sign(u*offset)}=${A(w*k)}`),
+          mk('移項',`${A(u)}${sign(-w*k)}${v}=${-u*offset}`),
+          mk('合併同類項',`${A(n)}=${n*s}`),...finish(n)];
+      }else{
+        n=u+w;s=pick([-4,-3,-2,-1,1,2,3,4],rng)*lcm;sText=String(s);
+        offset=pick([-3,-2,-1,1,2,3],rng)*e;rhs=(n*s+w*offset)/lcm;
+        formula=`${v}/${d}+(${v}${sign(offset)})/${e}=${rhs}`;
+        steps=[mk('去分母',`${A(u)}+${w}(${v}${sign(offset)})=${rhs*lcm}`,`兩邊每一項同乘最小公倍數 ${lcm}。`),
+          mk('去括號',`${A(u)}+${A(w)}${sign(w*offset)}=${rhs*lcm}`),
+          mk('移項',`${A(u)}+${A(w)}=${rhs*lcm}${sign(-w*offset)}`),
+          mk('合併同類項',`${A(n)}=${n*s}`),...finish(n)];
+      }
+
     }else{
       template=pick(['oneBracketBothSides','twoBrackets','minusBracketBothSides','bracketWithOffset'],rng);
       let c=pick([-5,-4,-3,-2,2,3,4,5],rng);
@@ -961,7 +986,7 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
     return {level,source,variable:v,formula,steps,answer,solution:s,solutionText:sText,isFraction:fractionMode,type:LEVELS[level].title,template,instruction:'解下列方程，逐行填寫過程',tex:formula,key:`${level}|${formula}`};
   }
   function generateQuestion(level,rng=Math.random,recent=[]){
-    level=Math.min(5,Math.max(1,Number(level)||1));let q;
+    level=Math.min(6,Math.max(1,Number(level)||1));let q;
     const fractionMode=rng()<0.20;
     for(let i=0;i<240;i++){q=family(level,rng,fractionMode);if(q&&!recent.includes(q.key))return q;}
     // A heavily constrained custom random source may repeat a question.
@@ -2167,7 +2192,7 @@ const $=id=>document.getElementById(id);
 function newId(){return (typeof crypto!=='undefined' && typeof crypto.randomUUID==='function')?crypto.randomUUID():('e2-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12));}
 let player=null,progress=blank(),question=null,stepIndex=0,questionErrors=0,questionNumber=0,locked=false,selectedSkill='tide';
 let selectedStatsLevel='all',pendingAnswers=[],pendingBatch=null,progressDirty=false,syncInFlight=false,syncQueued=false,resetFlag=false;
-let bossHp=300000,bossMaxHp=300000,protectedAction='',recentKeys=Object.fromEntries([1,2,3,4,5].map(k=>[k,[]]));
+let bossHp=300000,bossMaxHp=300000,protectedAction='',recentKeys=Object.fromEntries([1,2,3,4,5,6].map(k=>[k,[]]));
 const skillsHint={
   '移項':'把未知數或常數項移至另一方時，注意改變正負號。',
   '合併同類項':'把含未知數的項與常數項分別合併，留意負數。',
@@ -2179,10 +2204,10 @@ const skillsHint={
   '化系數為 1':'將方程兩邊同除以未知數的係數，注意負號。',
   '計算':'這一步保留算式，再正確計算出數值。'
 };
-function emptyStats(){return Object.fromEntries([1,2,3,4,5].map(i=>[i,{total:0,correct:0,stepAttempts:0,stepErrors:0}]));}
+function emptyStats(){return Object.fromEntries([1,2,3,4,5,6].map(i=>[i,{total:0,correct:0,stepAttempts:0,stepErrors:0}]));}
 function blank(){return {level:1,xp:0,total:0,correct:0,stepAttempts:0,stepErrors:0,streak:0,mistakes:0,levelStats:emptyStats(),mistakeHistory:[]};}
-function normalStats(obj){const st=emptyStats();for(let i=1;i<=5;i++){const a=Array.isArray(obj)?obj.find(row=>Number(row.level)===i)||{}:obj?.[i]||{};for(const field of ['total','correct','stepAttempts','stepErrors'])st[i][field]=Math.max(0,Number(a[field])||0);}return st;}
-function normalizeProgress(obj){const p={...blank(),...obj};p.level=Math.max(1,Math.min(5,Number(p.level)||1));p.xp=Math.max(0,Math.min(10000000,Number(p.xp)||0));delete p.score;for(const key of ['total','correct','stepAttempts','stepErrors','streak','mistakes'])p[key]=Number(p[key])||0;p.levelStats=normalStats(p.levelStats);p.mistakeHistory=Array.isArray(p.mistakeHistory)?p.mistakeHistory:[];return p;}
+function normalStats(obj){const st=emptyStats();for(let i=1;i<=6;i++){const a=Array.isArray(obj)?obj.find(row=>Number(row.level)===i)||{}:obj?.[i]||{};for(const field of ['total','correct','stepAttempts','stepErrors'])st[i][field]=Math.max(0,Number(a[field])||0);}return st;}
+function normalizeProgress(obj){const p={...blank(),...obj};p.level=Math.max(1,Math.min(6,Number(p.level)||1));p.xp=Math.max(0,Math.min(10000000,Number(p.xp)||0));delete p.score;for(const key of ['total','correct','stepAttempts','stepErrors','streak','mistakes'])p[key]=Number(p[key])||0;p.levelStats=normalStats(p.levelStats);p.mistakeHistory=Array.isArray(p.mistakeHistory)?p.mistakeHistory:[];return p;}
 function storageKey(){return `${STORAGE_KEY}:${player.className}:${player.id}`;}
 function loadLocal(){try{const obj=JSON.parse(localStorage.getItem(storageKey()))||{};cloudEpoch=obj.cloudEpoch??null;pendingAnswers=obj?.syncOutbox?.answers||[];pendingBatch=obj?.syncOutbox?.batch||null;resetFlag=Boolean(obj?.syncOutbox?.resetFlag);return normalizeProgress(obj);}catch{return blank();}}
 function saveLocal(){if(!player)return;try{localStorage.setItem(storageKey(),JSON.stringify({...progress,cloudEpoch,syncOutbox:{answers:pendingAnswers,batch:pendingBatch,resetFlag}}));}catch(e){console.warn('本地儲存不可用；請在 HTTPS 網站使用',e.message);}}
@@ -2355,7 +2380,7 @@ function showWorkedExample(){
    }
  }
  if(!sample)return;
- const templateLabels={move:'單步移項',reverseMove:'等號左右互換',coefficient:'單步化系數為 1',reverseCoefficient:'未知數在右方',standard:'先移項、再化系數為 1',reverseStandard:'等號左右互換的兩步方程',constantFirst:'常數寫在前面的兩步方程',bothSides:'兩邊都有未知數',reverseBothSides:'交換等號左右的兩邊未知數',constantFirstBothSides:'兩邊都有未知數，常數在前',singleBracket:'單層去括號',negativeBracket:'括號前有負係數',bracketWithConstant:'去括號後合併常數',fractionBracket:'含分母的單層括號',oneBracketBothSides:'一邊括號、兩邊未知數',twoBrackets:'兩邊都有括號',minusBracketBothSides:'括號前有減號、兩邊未知數',bracketWithOffset:'括號與常數、兩邊未知數'};
+ const templateLabels={move:'單步移項',fractionAcross:'兩邊分式方程',fractionSum:'分式相加方程',reverseMove:'先移項：字母左、數字右',coefficient:'單步化系數為 1',reverseCoefficient:'未知數在右方',standard:'先移項、再化系數為 1',reverseStandard:'等號左右互換的兩步方程',constantFirst:'常數寫在前面的兩步方程',bothSides:'兩邊都有未知數',reverseBothSides:'交換等號左右的兩邊未知數',constantFirstBothSides:'兩邊都有未知數，常數在前',singleBracket:'單層去括號',negativeBracket:'括號前有負係數',bracketWithConstant:'去括號後合併常數',fractionBracket:'含分母的單層括號',oneBracketBothSides:'一邊括號、兩邊未知數',twoBrackets:'兩邊都有括號',minusBracketBothSides:'括號前有減號、兩邊未知數',bracketWithOffset:'括號與常數、兩邊未知數'};
  const title=templateLabels[question.template]||core.LEVELS[question.level].title;
  $('example-title').textContent=`Level ${question.level} · ${title}`;
  const start=$('example-start');start.replaceChildren();
@@ -2365,7 +2390,7 @@ function showWorkedExample(){
    const row=document.createElement('div');row.className='example-step';
    const label=document.createElement('div');label.className='example-step-label';label.textContent=`第 ${i+1} 步｜${st.skill}`;
    const equation=document.createElement('div');equation.className='equation-line';renderEquationLine(equation,st.eq);
-   row.append(label,equation);steps.append(row);
+   row.append(label,equation);if(st.hint){const hint=document.createElement('p');hint.textContent=st.hint;hint.style.cssText='font-size:15px;color:#b8c9dc';row.append(hint);}steps.append(row);
  }
  $('worked-example-dialog').showModal();
 }
@@ -2477,8 +2502,8 @@ function completeQuestion(){
   const currentLevel=question.level,stats=progress.levelStats[currentLevel];progress.total++;stats.total++;
   if(questionErrors===0){progress.correct++;stats.correct++;progress.streak++;}else progress.streak=0;
   progress.xp+=questionReward();
-  const levelUp=progress.xp>=XP_LEVEL_THRESHOLD && progress.level<5;
-  while(progress.xp>=XP_LEVEL_THRESHOLD&&progress.level<5){progress.level++;progress.xp-=XP_LEVEL_THRESHOLD;}
+  const levelUp=progress.xp>=XP_LEVEL_THRESHOLD && progress.level<6;
+  while(progress.xp>=XP_LEVEL_THRESHOLD&&progress.level<6){progress.level++;progress.xp-=XP_LEVEL_THRESHOLD;}
   bossHp=Math.max(0,bossHp-BOSS_DAMAGE_PER_QUESTION);Battle.updateStatus({combo:progress.streak,bossHp,bossMaxHp});Battle.castSkill(selectedSkill,Math.max(1,progress.streak),BOSS_DAMAGE_PER_QUESTION,currentLevel);
   $('feedback').className='feedback show correct';$('feedback').textContent=`🎉 完成整題！+${questionReward()} EXP，魔王 HP −${BOSS_DAMAGE_PER_QUESTION}${questionErrors?'（本題曾修正 '+questionErrors+' 步）':'，全程無錯！'}`;
   $('step-progress').style.width='100%';$('submit-answer').disabled=true;
@@ -2495,7 +2520,7 @@ function renderStats(){const p=selectedStatsLevel==='all'?progress:progress.leve
   document.querySelectorAll('[data-stats-level]').forEach(b=>{b.classList.toggle('active',b.dataset.statsLevel===selectedStatsLevel);b.setAttribute('aria-selected',String(b.dataset.statsLevel===selectedStatsLevel));});
 }
 function updateProgress(){const info=core.LEVELS[progress.level];$('level-kicker').textContent=`LEVEL ${progress.level}`;$('level-title').textContent=info.title;
- $('xp-copy').textContent=progress.level===5&&progress.xp>=XP_LEVEL_THRESHOLD?`${progress.xp} EXP · 最高級`:`${progress.xp} / ${XP_LEVEL_THRESHOLD} EXP`;$('xp-bar').style.width=`${Math.min(100,progress.xp/XP_LEVEL_THRESHOLD*100)}%`;
+ $('xp-copy').textContent=progress.level===6&&progress.xp>=XP_LEVEL_THRESHOLD?`${progress.xp} EXP · 最高級`:`${progress.xp} / ${XP_LEVEL_THRESHOLD} EXP`;$('xp-bar').style.width=`${Math.min(100,progress.xp/XP_LEVEL_THRESHOLD*100)}%`;
  $('player-avatar').src=info.avatar;$('player-avatar').alt=info.rank;$('rank-chip').textContent=info.rank;$('mission-title').textContent=info.mission;$('mission-hint').textContent=info.hint;
  for(const dot of document.querySelectorAll('[data-level-dot]')){const l=Number(dot.dataset.levelDot);dot.classList.toggle('active',l===progress.level);dot.classList.toggle('done',l<progress.level);}
  for(const card of document.querySelectorAll('[data-level-card]')){const l=Number(card.dataset.levelCard);card.classList.toggle('active',l===progress.level);card.classList.toggle('done',l<progress.level);}
@@ -2725,7 +2750,7 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
         <button type="button" role="tab" aria-selected="false" data-stats-level="2">L2</button>
         <button type="button" role="tab" aria-selected="false" data-stats-level="3">L3</button>
         <button type="button" role="tab" aria-selected="false" data-stats-level="4">L4</button>
-        <button type="button" role="tab" aria-selected="false" data-stats-level="5">L5</button>
+        <button type="button" role="tab" aria-selected="false" data-stats-level="5">L5</button><button type="button" role="tab" aria-selected="false" data-stats-level="6">L6</button>
       </div>
     </nav>
     <div class="student-downloads" aria-label="下載個人學習數據">
@@ -2746,12 +2771,12 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
           <span id="xp-bar"></span>
         </div>
       </div>
-      <div class="level-dots" aria-label="五個關卡">
+      <div class="level-dots" aria-label="六個關卡">
         <span class="active" data-level-dot="1">1</span>
         <span data-level-dot="2">2</span>
         <span data-level-dot="3">3</span>
         <span data-level-dot="4">4</span>
-        <span data-level-dot="5">5</span>
+        <span data-level-dot="5">5</span><span data-level-dot="6">6</span>
       </div>
     </section>
 
@@ -2823,7 +2848,7 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
         <div class="level-dock">
           <div class="map-heading">
             <span>TRAINING MAP</span>
-            <strong>五階段逐步解題</strong>
+            <strong>六階段逐步解題</strong>
           </div>
           <ol class="level-map">
           <li class="active" data-level-card="1">
@@ -2851,8 +2876,8 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
             <div><strong>兩邊含未知數及去括號</strong><small>兩邊未知數及括號</small></div>
             <i data-lucide="lock-keyhole"></i>
           </li>
-          </ol>
-          <div class="final-target"><span>最終目標</span><strong>完成全部五個 Level</strong></div>
+<li data-level-card="6"><span>06</span><div><strong>去分母解方程</strong><small>先乘最小公倍數，再移項</small></div></li>          </ol>
+          <div class="final-target"><span>最終目標</span><strong>完成全部六個 Level</strong></div>
         </div>
       </aside>
     </div>
@@ -2886,7 +2911,7 @@ document.addEventListener('DOMContentLoaded',init);window.addEventListener('onli
 
   <dialog id="reset-dialog" class="confirm-dialog">
     <h2>重設全部進度？</h2>
-    <p>五個 Level 的經驗值、步驟錯誤記錄與完成題數將清零。</p>
+    <p>六個 Level 的經驗值、步驟錯誤記錄與完成題數將清零。</p>
     <div>
       <button type="button" onclick="this.closest('dialog').close()">取消</button>
       <button id="confirm-reset" class="danger" type="button">重設</button>
