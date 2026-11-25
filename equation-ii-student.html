@@ -914,20 +914,16 @@ c;c--)k=k.inverse().add(d[c]);c=k.sub(b);if(c.n*a<c.d)return k.mul(this.s)}retur
         ...finish(a-c)
       ];
     }else if(level===4){
-      template=pick(['singleBracket','negativeBracket','bracketWithConstant','fractionBracket'],rng);
+      template=pick(['singleBracket','negativeBracket','bracketWithConstant'],rng);
       const k=template==='negativeBracket'?-Math.abs(a):a;
       chooseRoot(k);const r=int(k*s)+k*b;
-      if(template==='fractionBracket'){
-        const denom=rand(2,7,rng);
-        formula=`(${k}(${v}${sign(b)}))/(${denom})=(${r})/(${denom})`;
-      }else if(template==='bracketWithConstant'){
+      if(template==='bracketWithConstant'){
         const m=pick([-7,-6,-5,-4,-3,-2,2,3,4,5,6,7],rng);
         formula=`${k}(${v}${sign(b)})${sign(m)}=${r+m}`;
       }else{
         formula=`${k}(${v}${sign(b)})=${r}`;
       }
       steps=[];
-      if(template==='fractionBracket')steps.push(mk('去分母',`${k}(${v}${sign(b)})=${r}`));
       if(template==='bracketWithConstant'){
         const m=Number(formula.slice(formula.lastIndexOf(')')+1,formula.lastIndexOf('=')));
         steps.push(mk('去括號',`${A(k)}${sign(k*b)}${sign(m)}=${r+m}`));
