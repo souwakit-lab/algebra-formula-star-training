@@ -53,6 +53,7 @@ $('login-form').onsubmit=async e=>{
   status('暫用本機測驗進度，連線後自動補傳');
  }finally{busy=false;$('login-button').disabled=false;}
  ready=true;$('identity').textContent=`${player.className} ${player.id} 號　${player.name}`;$('login').hidden=true;$('exam').hidden=false;persist();render();schedule();
+ for(const [level,q] of Object.entries(state.active))if(!q.done&&!q.startedAt)queue({kind:'clock',level:Number(level),questionId:q.id,timestamp:new Date().toISOString()});
 };
 function selectLevel(l,newQuestion=false){
  if(!ready)return;selected=l;
@@ -65,26 +66,39 @@ function selectLevel(l,newQuestion=false){
  $('answer').value='';$('preview').replaceChildren();$('feedback').textContent='';persist();render();$('answer').focus();
 }
 function math(node,text){NthTermMathRenderer.render(node,String(text).replaceAll('*','×'));}
+function renderSolution(q){
+ $('history').replaceChildren();$('solution').hidden=!q.history.length;
+ for(const line of q.history){
+  const row=document.createElement('div');row.className='solution-row';row.setAttribute('aria-label',line.replaceAll('*','×'));
+  const [left,...right]=line.replaceAll('＝','=').split('=');
+  for(const [part,text] of [['left',left],['equals','='],['right',right.join('=')]]){const cell=document.createElement('span');cell.className='solution-'+part;math(cell,text);row.append(cell);}
+  $('history').append(row);
+ }
+}
 function render(){
  $('total').textContent=M.total(state);$('levels').replaceChildren();
+ const hero=M.heroLevel(M.total(state));$('hero').src=`../equation-ii-assets/hero-lv${hero}.webp`;$('hero').alt=`L${hero} 魔法學徒`;
  for(let l=1;l<=6;l++){
   const full=state.scores[l]===M.CAPS[l],b=document.createElement('button');b.type='button';b.className='level'+(selected===l?' selected':'')+(full?' full':'');b.setAttribute('aria-pressed',String(selected===l));
   const title=document.createElement('strong');title.textContent='L'+l;const points=document.createElement('span');points.className='points';points.textContent=`${state.scores[l]} / ${M.CAPS[l]} 分`;const note=document.createElement('small');note.textContent=full?'已滿分':C.LEVELS[l].title;b.append(title,points,note);b.onclick=()=>selectLevel(l);$('levels').append(b);
  }
  if(M.total(state)===100&&!congratulated){congratulated=true;persist();$('congratulations').showModal();}
  $('welcome').hidden=Boolean(selected);$('question-area').hidden=!selected;if(!selected)return;
- $('hero').src=`../equation-ii-assets/hero-lv${Math.min(selected,5)}.webp`;
  $('level-label').textContent=`L${selected} · ${C.LEVELS[selected].title}`;
  const q=state.active[selected],full=state.scores[selected]>=M.CAPS[selected];
  $('answer-form').hidden=!q||q.done||full;$('next-question').hidden=!q||!q.done||full;
  $('potential').textContent=full?'本級已滿分':q?`本題最多可得 ${Math.min(M.reward(q.errors),M.CAPS[selected]-state.scores[selected])} 分`:'';
- if(!q){$('question').textContent='本級已滿分';$('history').replaceChildren();return;}
- math($('question'),q.formula);$('history').replaceChildren();for(const line of q.history){const li=document.createElement('li');math(li,line);$('history').append(li);}
+ if(!q){$('question').textContent='本級已滿分';$('history').replaceChildren();$('solution').hidden=true;$('replace-question').hidden=true;return;}
+ math($('question'),q.formula);renderSolution(q);
  $('keypad').querySelector('[data-key="x"]').textContent=q.variable;$('keypad').querySelector('[data-key="x"]').dataset.variable=q.variable;
  if(q.done){$('feedback').className='good';$('feedback').textContent=`答對！本題 +${q.gain} 分。`+(full?'本級已滿分，請選擇其他級別。':'按「下一題」繼續，或選擇其他級別。');}
  updateCooldown();
 }
-function updateCooldown(){const q=state.active[selected],remaining=q?Math.max(0,q.cooldownUntil-Date.now()):0;$('submit-answer').disabled=!q||q.done||remaining>0;$('submit-answer').textContent=remaining?`請稍候 ${Math.ceil(remaining/1000)} 秒`:'檢查這一步';}
+function updateCooldown(){const q=state.active[selected],remaining=q?Math.max(0,q.cooldownUntil-Date.now()):0;$('submit-answer').disabled=!q||q.done||remaining>0;$('submit-answer').textContent=remaining?`請稍候 ${Math.ceil(remaining/1000)} 秒`:'檢查這一步';
+ const button=$('replace-question');button.hidden=!q||q.done||state.scores[selected]>=M.CAPS[selected];
+ const wait=q?.startedAt?Math.max(0,q.startedAt+M.REPLACE_AFTER-Date.now()):M.REPLACE_AFTER;
+ button.disabled=wait>0;button.textContent=wait?`換一題（還需 ${Math.floor(Math.ceil(wait/1000)/60)}:${String(Math.ceil(wait/1000)%60).padStart(2,'0')}）`:'換一題';
+}
 setInterval(updateCooldown,250);
 $('answer-form').onsubmit=e=>{
  e.preventDefault();const q=state.active[selected],answer=$('answer').value.trim();if(!q||q.done||Date.now()<q.cooldownUntil||!answer)return;
@@ -95,6 +109,13 @@ $('answer-form').onsubmit=e=>{
 };
 $('answer').oninput=()=>math($('preview'),$('answer').value);
 $('next-question').onclick=()=>selectLevel(selected,true);
+$('replace-question').onclick=()=>{
+ const q=state.active[selected];if(!q||q.done||!q.startedAt||Date.now()-q.startedAt<M.REPLACE_AFTER)return;
+ const generated=C.generateQuestion(selected,Math.random,[`${selected}|${q.formula}`]);
+ try{queue({kind:'replace',level:selected,previousQuestionId:q.id,questionId:uid(),formula:generated.formula,variable:generated.variable,timestamp:new Date().toISOString()});
+ $('answer').value='';$('preview').replaceChildren();$('feedback').className='good';$('feedback').textContent='已換新題，這題重新計時及計算錯誤次數。';render();$('answer').focus();
+ }catch(err){$('feedback').textContent=err.message;}
+};
 function insert(text){const input=$('answer'),at=input.selectionStart??input.value.length;input.setRangeText(text,at,input.selectionEnd??at,'end');input.focus();input.dispatchEvent(new Event('input'));}
 $('keypad').onclick=e=>{const b=e.target.closest('[data-key]');if(b)insert(b.dataset.variable||b.dataset.key);};
 $('fraction-button').onclick=()=>{$('numerator').value='';$('denominator').value='';$('fraction-dialog').showModal();$('numerator').focus();};
