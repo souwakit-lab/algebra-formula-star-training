@@ -107,27 +107,29 @@
       steps.push(mk('合併／計算',`${A(k)}=${int(k*s)}`),...finish(k));
     }else if(level===6){
       const gcd=(x,y)=>y?gcd(y,x%y):x;
-      const d=pick([2,3,4,5,6,8,10],rng),e=pick([3,4,5,6,8,10,12],rng),lcm=d*e/gcd(d,e),u=lcm/d,w=lcm/e;
+      const d=pick([1,2,3],rng),e=pick([1,2,3],rng),lcm=d*e/gcd(d,e),u=lcm/d,w=lcm/e;
+      if(d===1&&e===1)return null;
       template=pick(['fractionAcross','fractionSum'],rng);
-      let k=pick([1,2,3,4],rng),offset,rhs,n;
+      let k=pick([1,2,3],rng),offset,rhs,n;
+      const rootText=(num,den)=>{const g=gcd(Math.abs(num),Math.abs(den));num/=g;den/=g;if(den<0){num=-num;den=-den;}return den===1?String(num):`${num}/${den}`;};
       if(template==='fractionAcross'){
         n=u-w*k;if(!n)return null;
         // Integer roots without rejecting either pictured family.
-        offset=pick([-4,-3,-2,-1,1,2,3,4],rng)*n;
-        s=-u*offset/n;sText=String(s);
+        offset=pick([1,2,3],rng);
+        s=-u*offset/n;sText=rootText(-u*offset,n);
         formula=`(${v}${sign(offset)})/${d}=(${A(k)})/${e}`;
         steps=[mk('去分母',`${u}(${v}${sign(offset)})=${A(w*k)}`,`兩邊每一項同乘最小公倍數 ${lcm}。`),
           mk('去括號',`${A(u)}${sign(u*offset)}=${A(w*k)}`),
           mk('移項',`${A(u)}${sign(-w*k)}${v}=${-u*offset}`),
-          mk('合併同類項',`${A(n)}=${n*s}`),...finish(n)];
+          mk('合併同類項',`${A(n)}=${int(n*s)}`),...finish(n)];
       }else{
-        n=u+w;s=pick([-4,-3,-2,-1,1,2,3,4],rng)*lcm;sText=String(s);
-        offset=pick([-3,-2,-1,1,2,3],rng)*e;rhs=(n*s+w*offset)/lcm;
+        n=u+w;offset=pick([1,2,3],rng);rhs=pick([1,2,3],rng);
+        s=(rhs*lcm-w*offset)/n;sText=rootText(rhs*lcm-w*offset,n);
         formula=`${v}/${d}+(${v}${sign(offset)})/${e}=${rhs}`;
         steps=[mk('去分母',`${A(u)}+${w}(${v}${sign(offset)})=${rhs*lcm}`,`兩邊每一項同乘最小公倍數 ${lcm}。`),
           mk('去括號',`${A(u)}+${A(w)}${sign(w*offset)}=${rhs*lcm}`),
           mk('移項',`${A(u)}+${A(w)}=${rhs*lcm}${sign(-w*offset)}`),
-          mk('合併同類項',`${A(n)}=${n*s}`),...finish(n)];
+          mk('合併同類項',`${A(n)}=${int(n*s)}`),...finish(n)];
       }
 
     }else{
